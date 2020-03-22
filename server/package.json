@@ -1,0 +1,32 @@
+{
+  "name": "game-online",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vladesco/game-online.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vladesco/game-online/issues"
+  },
+  "homepage": "https://github.com/vladesco/game-online#readme",
+  "devDependencies": {
+    "@types/mysql": "^2.15.8",
+    "@types/node": "^13.7.1",
+    "prettier": "^2.0.1",
+    "tslint": "^6.0.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.2.0",
+    "typescript": "^3.7.5"
+  },
+  "dependencies": {
+    "mysql": "^2.18.1"
+  }
+}

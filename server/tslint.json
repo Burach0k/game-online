@@ -1,0 +1,19 @@
+{
+  "extends": [
+    "tslint:recommended",
+    "tslint-plugin-prettier",
+    "tslint-config-prettier"
+  ],
+  "prettier": true,
+  "rules": {
+    "semicolon": [
+      false,
+      "always"
+    ],
+    "ter-indent": [
+      true,
+      4
+    ],
+    "whitespace": false
+  }
+}
