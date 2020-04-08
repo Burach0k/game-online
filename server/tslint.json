@@ -1,5 +1,10 @@
 {
-  "extends": "tslint-config-standard",
+  "extends": [
+    "tslint:recommended",
+    "tslint-plugin-prettier",
+    "tslint-config-prettier"
+  ],
+  "prettier": true,
   "rules": {
     "semicolon": [
       false,
