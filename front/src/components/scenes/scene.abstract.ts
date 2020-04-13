@@ -1,16 +1,16 @@
-import { Canvas } from '../canvas/canvas';
+import { Screen } from '../canvas/canvas';
 import { Game } from 'src/game';
 
 export abstract class Scene {
-  public canvas: Canvas;
+  public screen: Screen;
   public game: Game;
 
-  constructor(canvas: Canvas, game: Game) {
-    this.canvas = canvas;
+  constructor(screen: Screen, game: Game) {
+    this.screen = screen;
     this.game = game;
   }
 
   abstract init(): void;
 
-  abstract render(keyEventLoop: number[]): void;
+  abstract render(): void;
 }

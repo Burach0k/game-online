@@ -1,52 +1,76 @@
 import { Scene } from '../scene.abstract';
-import { Canvas } from 'src/components/canvas/canvas';
+import { Screen } from 'src/components/canvas/canvas';
 import { TextItem } from 'src/models/text-item';
 import { menuConsts, sceneNames, keyCodes } from '../../../consts';
 import { Game } from 'src/game';
+import { ScreenEventManager } from '../../../event-managers/keyboard-event-manager';
+import { MouseEventManager } from '../../../event-managers/mouse-event-manager';
 
 export class Menu extends Scene {
   private chooseElement = menuConsts.firstElement;
+  private keyboardEventManager = new ScreenEventManager(this.game.screen);
+  private mouseEventManager = new MouseEventManager(this.game.screen);
 
   private menuItems: TextItem[] = [
     {
       text: 'New game',
-      x: this.canvas.width / 2,
-      y: this.canvas.height / 4,
+      x: this.screen.width / 2,
+      y: this.screen.height / 4,
       color: menuConsts.chooseColor,
     },
     {
       text: 'Continue',
-      x: this.canvas.width / 2,
-      y: this.canvas.height / 2,
+      x: this.screen.width / 2,
+      y: this.screen.height / 2,
       color: menuConsts.defaultColor,
     },
     {
       text: 'Exit',
-      x: this.canvas.width / 2,
-      y: this.canvas.height / 1.3,
+      x: this.screen.width / 2,
+      y: this.screen.height / 1.3,
       color: menuConsts.defaultColor,
     },
   ];
 
-  constructor(canvas: Canvas, game: Game) {
-    super(canvas, game);
+  constructor(screen: Screen, game: Game) {
+    super(screen, game);
   }
 
   init(): void {
-    this.canvas.initTextStyle('30px serif', 'center');
+    this.screen.initTextStyle('30px serif', 'center');
+    this.keyboardEventManager.subscribe('keydown', (data) =>
+      this.changeMenuStatus(data.keyCode)
+    );
+
+    this.mouseEventManager.subscribe('mousemove', (data) => {
+      this.chooseMenuItem(
+        this.menuItems.find((menuItem, index) => {
+          if (
+            menuItem.y <= data.clientY &&
+            index !== this.menuItems.length - 1 &&
+            this.menuItems[index + 1].y > data.clientY
+          ) {
+            return true;
+          } else if (menuItem.y > data.clientY && index === 0) {
+            return true;
+          } else if (
+            menuItem.y < data.clientY &&
+            index === this.menuItems.length - 1
+          ) {
+            return true;
+          }
+        })
+      );
+    });
   }
 
-  render(keyEventLoop: number[]): void {
-    if (keyEventLoop.length > 0) {
-      this.changeMenuStatus(keyEventLoop);
-    }
-
-    this.canvas.renderBackground(menuConsts.backgraundColor);
-    this.menuItems.forEach((item) => this.canvas.renderText(item));
+  render(): void {
+    this.screen.renderBackground(menuConsts.backgraundColor);
+    this.menuItems.forEach((item) => this.screen.renderText(item));
   }
 
-  changeMenuStatus(keys: number[]): void {
-    switch (keys[menuConsts.firstElement]) {
+  changeMenuStatus(key: number): void {
+    switch (key) {
       case keyCodes.ArrowUp:
         this.previousElement();
         break;
@@ -59,30 +83,31 @@ export class Menu extends Scene {
         this.choose(this.chooseElement);
         break;
     }
-
-    keys.pop();
   }
 
   nextElement(): void {
-    this.menuItems[this.chooseElement].color = menuConsts.defaultColor;
-
     const isLastElement = this.chooseElement === this.menuItems.length - 1;
     this.chooseElement = isLastElement
       ? menuConsts.firstElement
       : this.chooseElement + 1;
 
-    this.menuItems[this.chooseElement].color = menuConsts.chooseColor;
+    this.chooseMenuItem(this.menuItems[this.chooseElement]);
   }
 
   previousElement(): void {
-    this.menuItems[this.chooseElement].color = menuConsts.defaultColor;
-
     const isFirstElement = this.chooseElement === menuConsts.firstElement;
     this.chooseElement = isFirstElement
       ? this.menuItems.length - 1
       : this.chooseElement - 1;
 
-    this.menuItems[this.chooseElement].color = menuConsts.chooseColor;
+    this.chooseMenuItem(this.menuItems[this.chooseElement]);
+  }
+
+  chooseMenuItem(textItem: TextItem) {
+    this.menuItems.forEach(
+      (menuItem) => (menuItem.color = menuConsts.defaultColor)
+    );
+    textItem.color = menuConsts.chooseColor;
   }
 
   choose(element: number): void {

@@ -1,21 +1,19 @@
 import { Scene } from '../scene.abstract';
-import { Canvas } from 'src/components/canvas/canvas';
+import { Screen } from 'src/components/canvas/canvas';
 import { Game } from 'src/game';
 import { keyCodes, sceneNames, menuConsts } from '../../../consts';
 
 export class Play extends Scene {
-  constructor(canvas: Canvas, game: Game) {
-    super(canvas, game);
+  constructor(screen: Screen, game: Game) {
+    super(screen, game);
   }
 
   init(): void {}
 
-  render(keyEventLoop: number[]): void {
-    if (keyEventLoop.length > 0) {
-      this.checkEvent(keyEventLoop);
-    }
+  render(): void {
 
-    this.canvas.renderBackground('blue');
+
+    this.screen.renderBackground('blue');
   }
 
   checkEvent(keys: number[]): void {

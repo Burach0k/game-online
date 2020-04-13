@@ -1,6 +1,6 @@
 import { TextItem } from 'src/models/text-item';
 
-export class Canvas {
+export class Screen {
   public width: number;
   public height: number;
   private canvasElement: HTMLCanvasElement;
@@ -20,12 +20,14 @@ export class Canvas {
     this.canvasContext = this.canvasElement.getContext('2d');
   }
 
-  renderImg(img: HTMLImageElement): void { //пока тестовый вариант
+  renderImg(img: HTMLImageElement): void {
+    //пока тестовый вариант
     this.canvasContext.clearRect(0, 0, 100, 100);
     this.canvasContext.drawImage(img, 0, 0, 32, 32, 0, 0, 32, 32);
   }
 
-  getContext(): CanvasRenderingContext2D { //как думаешь, стоит ли передавать это за пределы класаа? Если нет, то переделай класс menu
+  getContext(): CanvasRenderingContext2D {
+    //как думаешь, стоит ли передавать это за пределы класаа? Если нет, то переделай класс menu
     return this.canvasContext;
   }
 
@@ -43,5 +45,13 @@ export class Canvas {
   renderText(item: TextItem): void {
     this.canvasContext.fillStyle = item.color;
     this.canvasContext.fillText(item.text, item.x, item.y);
+  }
+
+  addEventListener(eventName: string, callback: (data: any) => void) {
+    this.canvasElement.addEventListener(eventName, callback);
+  }
+
+  removeEventListener(eventName: string, callback: (data: any) => void) {
+    this.canvasElement.removeEventListener(eventName, callback);
   }
 }
