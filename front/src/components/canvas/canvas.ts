@@ -20,17 +20,6 @@ export class Screen {
     this.canvasContext = this.canvasElement.getContext('2d');
   }
 
-  renderImg(img: HTMLImageElement): void {
-    //пока тестовый вариант
-    this.canvasContext.clearRect(0, 0, 100, 100);
-    this.canvasContext.drawImage(img, 0, 0, 32, 32, 0, 0, 32, 32);
-  }
-
-  getContext(): CanvasRenderingContext2D {
-    //как думаешь, стоит ли передавать это за пределы класаа? Если нет, то переделай класс menu
-    return this.canvasContext;
-  }
-
   initTextStyle(font: string, textAlign: CanvasTextAlign = 'left'): void {
     this.canvasContext.font = font;
     this.canvasContext.textAlign = textAlign;

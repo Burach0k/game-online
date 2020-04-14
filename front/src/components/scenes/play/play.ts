@@ -11,8 +11,6 @@ export class Play extends Scene {
   init(): void {}
 
   render(): void {
-
-
     this.screen.renderBackground('blue');
   }
 
