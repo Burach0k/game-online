@@ -1,4 +1,4 @@
-import { EventManager, Subscription } from './event-manager';
+import { EventManager, Subscription } from '../utils/event-manager';
 import { Screen } from '../components/canvas/canvas';
 
 export class MouseEventManager extends EventManager {
@@ -15,7 +15,6 @@ export class MouseEventManager extends EventManager {
     eventName: string,
     callback: (data: any) => void
   ): Subscription {
-    debugger;
     if (
       this.subscribers.find((subscriber) => subscriber.eventName === eventName)
     ) {

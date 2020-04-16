@@ -1,24 +1,35 @@
-import { Scene } from '../scene.abstract';
-import { Screen } from 'src/components/canvas/canvas';
-import { Game } from 'src/game';
-import { keyCodes, sceneNames, menuConsts } from '../../../consts';
+import { Scene } from '../../../utils/scene';
+import { Screen } from '../../canvas/canvas';
+import { keyCodes, menuConsts, sceneNames } from '../../../consts';
+import { ScreenEventManager } from '../../../event-managers/keyboard-event-manager';
 
 export class Play extends Scene {
-  constructor(screen: Screen, game: Game) {
-    super(screen, game);
+  private callback: (scene: sceneNames) => void;
+  private keyboardEventManager = new ScreenEventManager(this.screen);
+
+  constructor(screen: Screen) {
+    super(screen);
   }
 
-  init(): void {}
+  init(): void {
+    this.keyboardEventManager.subscribe('keydown', (data) =>
+      this.checkEvent(data.keyCode)
+    );
+  }
 
   render(): void {
     this.screen.renderBackground('blue');
   }
 
-  checkEvent(keys: number[]): void {
-    switch (keys[menuConsts.firstElement]) {
+  checkEvent(key: number): void {
+    switch (key) {
       case keyCodes.Escape:
-        this.game.changeScene(sceneNames.Menu);
+        this.callback(sceneNames.Menu);
         break;
     }
+  }
+
+  onChangeScene(callback: (scene: sceneNames) => void): void {
+    this.callback = callback;
   }
 }

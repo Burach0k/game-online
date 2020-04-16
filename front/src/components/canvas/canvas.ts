@@ -1,4 +1,5 @@
 import { TextItem } from 'src/models/text-item';
+import { TextComponent } from '../component/component';
 
 export class Screen {
   public width: number;
@@ -20,9 +21,10 @@ export class Screen {
     this.canvasContext = this.canvasElement.getContext('2d');
   }
 
-  initTextStyle(font: string, textAlign: CanvasTextAlign = 'left'): void {
+  initTextStyle(font: string, textAlign: CanvasTextAlign = 'left', color: string = 'white'): void {
     this.canvasContext.font = font;
     this.canvasContext.textAlign = textAlign;
+    this.canvasContext.fillStyle = color;
   }
 
   renderBackground(backgraundColor: string): void {
@@ -31,8 +33,7 @@ export class Screen {
     this.canvasContext.fillRect(0, 0, this.width, this.height);
   }
 
-  renderText(item: TextItem): void {
-    this.canvasContext.fillStyle = item.color;
+  renderText(item: TextComponent): void {
     this.canvasContext.fillText(item.text, item.x, item.y);
   }
 

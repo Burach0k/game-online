@@ -1,72 +1,59 @@
-import { Scene } from '../scene.abstract';
+import { Scene } from '../../../utils/scene';
 import { Screen } from 'src/components/canvas/canvas';
-import { TextItem } from 'src/models/text-item';
-import { menuConsts, sceneNames, keyCodes } from '../../../consts';
+import { menuConsts, keyCodes, sceneNames } from '../../../consts';
 import { Game } from 'src/game';
 import { ScreenEventManager } from '../../../event-managers/keyboard-event-manager';
 import { MouseEventManager } from '../../../event-managers/mouse-event-manager';
+import { TextComponent } from '../../component/component';
 
 export class Menu extends Scene {
   private chooseElement = menuConsts.firstElement;
-  private keyboardEventManager = new ScreenEventManager(this.game.screen);
-  private mouseEventManager = new MouseEventManager(this.game.screen);
+  private keyboardEventManager = new ScreenEventManager(this.screen);
+  private mouseEventManager = new MouseEventManager(this.screen);
+  private callback: (scene: sceneNames) => void;
 
-  private menuItems: TextItem[] = [
-    {
-      text: 'New game',
-      x: this.screen.width / 2,
-      y: this.screen.height / 4,
-      color: menuConsts.chooseColor,
-    },
-    {
-      text: 'Continue',
-      x: this.screen.width / 2,
-      y: this.screen.height / 2,
-      color: menuConsts.defaultColor,
-    },
-    {
-      text: 'Exit',
-      x: this.screen.width / 2,
-      y: this.screen.height / 1.3,
-      color: menuConsts.defaultColor,
-    },
+  private menuItems: TextComponent[] = [
+    new TextComponent('New game', 70, this.screen.width),
+    new TextComponent('Continue', 70, this.screen.width),
+    new TextComponent('Exit', 70, this.screen.width),
   ];
 
-  constructor(screen: Screen, game: Game) {
-    super(screen, game);
+  constructor(screen: Screen) {
+    super(screen);
   }
 
   init(): void {
-    this.screen.initTextStyle('30px serif', 'center');
+    this.menuItems.forEach((item, index) => {
+      item.setStyle(30, 'center');
+
+      if (index === 0) {
+        item.x = this.screen.width / 2;
+        item.y = item.fontSize;
+      } else {
+        item.x = this.screen.width / 2;
+        item.y = this.menuItems[index - 1].y + this.menuItems[index - 1].height;
+      }
+    });
+
     this.keyboardEventManager.subscribe('keydown', (data) =>
       this.changeMenuStatus(data.keyCode)
     );
 
-    this.mouseEventManager.subscribe('mousemove', (data) => {
-      this.chooseMenuItem(
-        this.menuItems.find((menuItem, index) => {
-          if (
-            menuItem.y <= data.clientY &&
-            index !== this.menuItems.length - 1 &&
-            this.menuItems[index + 1].y > data.clientY
-          ) {
-            return true;
-          } else if (menuItem.y > data.clientY && index === 0) {
-            return true;
-          } else if (
-            menuItem.y < data.clientY &&
-            index === this.menuItems.length - 1
-          ) {
-            return true;
-          }
-        })
-      );
+    this.mouseEventManager.subscribe('mousemove', (data: MouseEvent) => {
+      this.chooseMenuItem(this.getItemByCoordinate(data.clientX, data.clientY));
+    });
+  }
+
+  getItemByCoordinate(x: number, y: number): TextComponent {
+    return this.menuItems.find(item => {
+      return (item.x <= x) && (item.x + item.width >= x) && (item.y <= y) && (item.y + item.height >= y);
     });
   }
 
   render(): void {
     this.screen.renderBackground(menuConsts.backgraundColor);
-    this.menuItems.forEach((item) => this.screen.renderText(item));
+
+    this.menuItems.forEach((item) => item.render(this.screen));
   }
 
   changeMenuStatus(key: number): void {
@@ -80,7 +67,7 @@ export class Menu extends Scene {
         break;
 
       case keyCodes.Enter:
-        this.choose(this.chooseElement);
+        this.callback(sceneNames.Play);
         break;
     }
   }
@@ -103,14 +90,17 @@ export class Menu extends Scene {
     this.chooseMenuItem(this.menuItems[this.chooseElement]);
   }
 
-  chooseMenuItem(textItem: TextItem) {
+  chooseMenuItem(textItem: TextComponent) {
     this.menuItems.forEach(
       (menuItem) => (menuItem.color = menuConsts.defaultColor)
     );
-    textItem.color = menuConsts.chooseColor;
+    if (textItem) {
+      console.log(textItem)
+      textItem.color = menuConsts.chooseColor;
+    }
   }
 
-  choose(element: number): void {
-    this.game.changeScene(sceneNames.Play);
+  onChangeScene(callback: (scene: sceneNames) => void): void {
+    this.callback = callback;
   }
 }

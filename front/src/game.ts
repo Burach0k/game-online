@@ -1,8 +1,7 @@
 import { Screen } from './components/canvas/canvas';
-import { Scene } from './components/scenes/scene.abstract';
+import { Scene } from './utils/scene';
 import { scenes } from './components/scenes/scenes';
 import { sceneNames } from './consts';
-import { SceneName } from './models/scene-name-type';
 
 export class Game {
   public screen: Screen;
@@ -10,12 +9,15 @@ export class Game {
   public keyEventLoop: Array<number> = [];
 
   private render(time: number): void {
-    this.scene.render();
+    this.scene.render(this.screen);
     requestAnimationFrame((time) => this.render(time));
   }
 
-  public changeScene(sceneName: SceneName): void {
-    this.scene = new scenes[sceneName](this.screen, this);
+  public changeScene(sceneName: sceneNames): void {
+    this.scene = new scenes[sceneName](this.screen);
+    this.scene.onChangeScene((scene: sceneNames) => {
+      this.changeScene(scene);
+    });
     this.scene.init();
   }
 
