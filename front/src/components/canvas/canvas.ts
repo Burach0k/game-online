@@ -21,7 +21,11 @@ export class Screen {
     this.canvasContext = this.canvasElement.getContext('2d');
   }
 
-  initTextStyle(font: string, textAlign: CanvasTextAlign = 'left', color: string = 'white'): void {
+  initTextStyle(
+    font: string,
+    textAlign: CanvasTextAlign = 'left',
+    color: string = 'white'
+  ): void {
     this.canvasContext.font = font;
     this.canvasContext.textAlign = textAlign;
     this.canvasContext.fillStyle = color;
@@ -43,5 +47,19 @@ export class Screen {
 
   removeEventListener(eventName: string, callback: (data: any) => void) {
     this.canvasElement.removeEventListener(eventName, callback);
+  }
+
+  renderImg(
+    image: CanvasImageSource,
+    sx: number,
+    sy: number,
+    sw: number,
+    sh: number,
+    dx: number,
+    dy: number,
+    dw: number,
+    dh: number
+  ): void {
+    this.canvasContext.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
   }
 }

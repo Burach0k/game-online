@@ -14,11 +14,12 @@ export class Game {
   }
 
   public changeScene(sceneName: sceneNames): void {
-    this.scene = new scenes[sceneName](this.screen);
-    this.scene.onChangeScene((scene: sceneNames) => {
+    const loadedScene = new scenes[sceneName](this.screen);
+    loadedScene.onChangeScene((scene: sceneNames) => {
       this.changeScene(scene);
     });
-    this.scene.init();
+    //place for preloader
+    loadedScene.init().then(() => (this.scene = loadedScene));
   }
 
   public start(): void {

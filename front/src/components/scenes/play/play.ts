@@ -6,19 +6,52 @@ import { ScreenEventManager } from '../../../event-managers/keyboard-event-manag
 export class Play extends Scene {
   private callback: (scene: sceneNames) => void;
   private keyboardEventManager = new ScreenEventManager(this.screen);
+  private tileMap: HTMLImageElement = new Image();
 
   constructor(screen: Screen) {
     super(screen);
   }
 
-  init(): void {
+  init(): Promise<any> {
     this.keyboardEventManager.subscribe('keydown', (data) =>
       this.checkEvent(data.keyCode)
     );
+
+    return this.loadResurces();
+  }
+
+  getMapConfiguration() {
+    return { tileSize: 16, land: [{ x: 1, y: 1 }] };
+  }
+
+  loadResurces(): Promise<any> {
+    let resolver: Function;
+    const loadingStatus = new Promise(
+      (resolve, reject) => (resolver = resolve)
+    );
+    this.tileMap.src = './sprites/lands/tilemap.png';
+    this.tileMap.addEventListener('load', () => resolver());
+    return loadingStatus;
   }
 
   render(): void {
-    this.screen.renderBackground('blue');
+    const data = {
+      tileSize: 16,
+      land: [{ tile_x: 0, tile_y: 0, map_x: 0, map_y: 0 }],
+    };
+    data.land.forEach((tile) => {
+      this.screen.renderImg(
+        this.tileMap,
+        tile.tile_x * data.tileSize,
+        tile.tile_y * data.tileSize,
+        data.tileSize,
+        data.tileSize,
+        tile.map_x,
+        tile.map_y,
+        50,
+        50
+      );
+    });
   }
 
   checkEvent(key: number): void {

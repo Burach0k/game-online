@@ -9,7 +9,7 @@ export abstract class Scene {
     this.screen = screen;
   }
 
-  abstract init(): void;
+  abstract init(): Promise<any>;
 
   abstract render(canvas: Screen): void;
 

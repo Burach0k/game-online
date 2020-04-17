@@ -22,7 +22,7 @@ export class Menu extends Scene {
     super(screen);
   }
 
-  init(): void {
+  init(): Promise<any> {
     this.menuItems.forEach((item, index) => {
       item.setStyle(30, 'center');
 
@@ -42,11 +42,18 @@ export class Menu extends Scene {
     this.mouseEventManager.subscribe('mousemove', (data: MouseEvent) => {
       this.chooseMenuItem(this.getItemByCoordinate(data.clientX, data.clientY));
     });
+
+    return Promise.resolve();
   }
 
   getItemByCoordinate(x: number, y: number): TextComponent {
-    return this.menuItems.find(item => {
-      return (item.x <= x) && (item.x + item.width >= x) && (item.y <= y) && (item.y + item.height >= y);
+    return this.menuItems.find((item) => {
+      return (
+        item.x <= x &&
+        item.x + item.width >= x &&
+        item.y <= y + item.height &&
+        item.y >= y
+      );
     });
   }
 
@@ -95,7 +102,6 @@ export class Menu extends Scene {
       (menuItem) => (menuItem.color = menuConsts.defaultColor)
     );
     if (textItem) {
-      console.log(textItem)
       textItem.color = menuConsts.chooseColor;
     }
   }
