@@ -5,6 +5,7 @@ export enum keyCodes {
   ArrowRight = 39,
   Enter = 13,
   Escape = 27,
+  Click = 'click'
 }
 
 export const menuConsts = {
@@ -12,6 +13,7 @@ export const menuConsts = {
   chooseColor: 'blue',
   backgraundColor: 'black',
   firstElement: 0,
+  fontSize: 30,
 };
 
 export enum sceneNames {

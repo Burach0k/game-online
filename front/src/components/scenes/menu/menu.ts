@@ -1,7 +1,6 @@
 import { Scene } from '../../../utils/scene';
 import { Screen } from 'src/components/canvas/canvas';
 import { menuConsts, keyCodes, sceneNames } from '../../../consts';
-import { Game } from 'src/game';
 import { ScreenEventManager } from '../../../event-managers/keyboard-event-manager';
 import { MouseEventManager } from '../../../event-managers/mouse-event-manager';
 import { TextComponent } from '../../component/component';
@@ -13,9 +12,9 @@ export class Menu extends Scene {
   private callback: (scene: sceneNames) => void;
 
   private menuItems: TextComponent[] = [
-    new TextComponent('New game', 70, this.screen.width),
-    new TextComponent('Continue', 70, this.screen.width),
-    new TextComponent('Exit', 70, this.screen.width),
+    new TextComponent('New game', 30, 140),
+    new TextComponent('Continue', 30, 120),
+    new TextComponent('Exit', 30, 60),
   ];
 
   constructor(screen: Screen) {
@@ -23,24 +22,20 @@ export class Menu extends Scene {
   }
 
   init(): Promise<any> {
-    this.menuItems.forEach((item, index) => {
-      item.setStyle(30, 'center');
+    this.calculateelementPosition();
 
-      if (index === 0) {
-        item.x = this.screen.width / 2;
-        item.y = item.fontSize;
-      } else {
-        item.x = this.screen.width / 2;
-        item.y = this.menuItems[index - 1].y + this.menuItems[index - 1].height;
-      }
-    });
-
-    this.keyboardEventManager.subscribe('keydown', (data) =>
-      this.changeMenuStatus(data.keyCode)
-    );
+    this.keyboardEventManager.subscribe('keydown', (data) => this.changeMenuStatus(data.keyCode));
 
     this.mouseEventManager.subscribe('mousemove', (data: MouseEvent) => {
-      this.chooseMenuItem(this.getItemByCoordinate(data.clientX, data.clientY));
+      const selectItem = this.getItemByCoordinate(data.clientX, data.clientY);
+
+      if (selectItem) this.chooseMenuItem(selectItem);
+    });
+
+    this.mouseEventManager.subscribe('click', (data: MouseEvent) => {
+      const selectItem = this.getItemByCoordinate(data.clientX, data.clientY);
+
+      if (selectItem) this.changeMenuStatus(data.type as keyCodes.Click);
     });
 
     return Promise.resolve();
@@ -49,9 +44,9 @@ export class Menu extends Scene {
   getItemByCoordinate(x: number, y: number): TextComponent {
     return this.menuItems.find((item) => {
       return (
-        item.x <= x &&
-        item.x + item.width >= x &&
-        item.y <= y + item.height &&
+        item.x - item.width / 2 <= x &&
+        item.x + item.width / 2 >= x &&
+        item.y - item.height <= y &&
         item.y >= y
       );
     });
@@ -59,11 +54,10 @@ export class Menu extends Scene {
 
   render(): void {
     this.screen.renderBackground(menuConsts.backgraundColor);
-
     this.menuItems.forEach((item) => item.render(this.screen));
   }
 
-  changeMenuStatus(key: number): void {
+  changeMenuStatus(key: keyCodes): void {
     switch (key) {
       case keyCodes.ArrowUp:
         this.previousElement();
@@ -74,6 +68,7 @@ export class Menu extends Scene {
         break;
 
       case keyCodes.Enter:
+      case keyCodes.Click:
         this.callback(sceneNames.Play);
         break;
     }
@@ -81,29 +76,36 @@ export class Menu extends Scene {
 
   nextElement(): void {
     const isLastElement = this.chooseElement === this.menuItems.length - 1;
-    this.chooseElement = isLastElement
-      ? menuConsts.firstElement
-      : this.chooseElement + 1;
+    this.chooseElement = isLastElement ? menuConsts.firstElement : this.chooseElement + 1;
 
     this.chooseMenuItem(this.menuItems[this.chooseElement]);
   }
 
   previousElement(): void {
     const isFirstElement = this.chooseElement === menuConsts.firstElement;
-    this.chooseElement = isFirstElement
-      ? this.menuItems.length - 1
-      : this.chooseElement - 1;
+    this.chooseElement = isFirstElement ? this.menuItems.length - 1 : this.chooseElement - 1;
 
     this.chooseMenuItem(this.menuItems[this.chooseElement]);
   }
 
   chooseMenuItem(textItem: TextComponent) {
-    this.menuItems.forEach(
-      (menuItem) => (menuItem.color = menuConsts.defaultColor)
-    );
-    if (textItem) {
-      textItem.color = menuConsts.chooseColor;
-    }
+    const oldSelectItem = this.menuItems.find((item) => item.color === menuConsts.chooseColor);
+
+    oldSelectItem.color = menuConsts.defaultColor;
+    textItem.color = menuConsts.chooseColor;
+  }
+
+  calculateelementPosition(): void {
+    this.menuItems.forEach((item, index) => {
+      const color = index === 0 ? menuConsts.chooseColor : menuConsts.defaultColor;
+      item.setStyle(menuConsts.fontSize, 'center', color);
+
+      item.x = this.screen.width / 2;
+      item.y =
+        this.screen.height / 2 +
+        index * menuConsts.fontSize * 2 -
+        this.menuItems.length * menuConsts.fontSize;
+    });
   }
 
   onChangeScene(callback: (scene: sceneNames) => void): void {

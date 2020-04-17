@@ -1,6 +1,6 @@
 import { Scene } from '../../../utils/scene';
 import { Screen } from '../../canvas/canvas';
-import { keyCodes, menuConsts, sceneNames } from '../../../consts';
+import { keyCodes, sceneNames } from '../../../consts';
 import { ScreenEventManager } from '../../../event-managers/keyboard-event-manager';
 
 export class Play extends Scene {
@@ -13,9 +13,7 @@ export class Play extends Scene {
   }
 
   init(): Promise<any> {
-    this.keyboardEventManager.subscribe('keydown', (data) =>
-      this.checkEvent(data.keyCode)
-    );
+    this.keyboardEventManager.subscribe('keydown', (data) => this.checkEvent(data.keyCode));
 
     return this.loadResurces();
   }
@@ -26,9 +24,7 @@ export class Play extends Scene {
 
   loadResurces(): Promise<any> {
     let resolver: Function;
-    const loadingStatus = new Promise(
-      (resolve, reject) => (resolver = resolve)
-    );
+    const loadingStatus = new Promise((resolve, reject) => (resolver = resolve));
     this.tileMap.src = './sprites/lands/tilemap.png';
     this.tileMap.addEventListener('load', () => resolver());
     return loadingStatus;
