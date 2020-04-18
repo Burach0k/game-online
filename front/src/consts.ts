@@ -5,7 +5,7 @@ export enum keyCodes {
   ArrowRight = 39,
   Enter = 13,
   Escape = 27,
-  Click = 'click'
+  Click = 'click',
 }
 
 export const menuConsts = {
@@ -20,3 +20,5 @@ export enum sceneNames {
   Play = 'Play',
   Menu = 'Menu',
 }
+
+export const SEVER_DOMAIN = 'http://localhost:8081';

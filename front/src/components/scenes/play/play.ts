@@ -1,12 +1,15 @@
 import { Scene } from '../../../utils/scene';
 import { Screen } from '../../canvas/canvas';
-import { keyCodes, sceneNames } from '../../../consts';
+import { keyCodes, sceneNames, SEVER_DOMAIN } from '../../../consts';
 import { ScreenEventManager } from '../../../event-managers/keyboard-event-manager';
+import io from 'socket.io-client';
 
 export class Play extends Scene {
   private callback: (scene: sceneNames) => void;
   private keyboardEventManager = new ScreenEventManager(this.screen);
   private tileMap: HTMLImageElement = new Image();
+  private gameSocket;
+  private mapData;
 
   constructor(screen: Screen) {
     super(screen);
@@ -18,33 +21,44 @@ export class Play extends Scene {
     return this.loadResurces();
   }
 
-  getMapConfiguration() {
-    return { tileSize: 16, land: [{ x: 1, y: 1 }] };
-  }
-
   loadResurces(): Promise<any> {
-    return new Promise((res, rej) => {
-      this.tileMap.src = './sprites/lands/tilemap.png';
-      this.tileMap.addEventListener('load', () => res());
-    });
+    this.gameSocket = io.connect(SEVER_DOMAIN);
+    const dataPrimse = new Promise((resolve, reject) =>
+      this.gameSocket.on('data', (data) => {
+        console.log(data);
+        if (!this.mapData) {
+          resolve();
+        }
+        this.mapData = data;
+      })
+    );
+
+    const mapPomise = fetch(`${SEVER_DOMAIN}/source_map`)
+      .then((response) => response.arrayBuffer())
+      .then((buffer) => {
+        return new Promise((resolve, reject) => {
+          const blob = new Blob([buffer], { type: 'image/png' });
+          const imageUrl = window.URL.createObjectURL(blob);
+          this.tileMap.src = imageUrl;
+          this.tileMap.addEventListener('load', resolve);
+        });
+      });
+
+    return Promise.all([dataPrimse, mapPomise]);
   }
 
   render(): void {
-    const data = {
-      tileSize: 16,
-      land: [{ tile_x: 0, tile_y: 0, map_x: 0, map_y: 0 }],
-    };
-    data.land.forEach((tile) => {
+    this.mapData.land.forEach((tile) => {
       this.screen.renderImg(
         this.tileMap,
-        tile.tile_x * data.tileSize,
-        tile.tile_y * data.tileSize,
-        data.tileSize,
-        data.tileSize,
+        tile.tile_x * this.mapData.tileSize,
+        tile.tile_y * this.mapData.tileSize,
+        this.mapData.tileSize,
+        this.mapData.tileSize,
         tile.map_x,
         tile.map_y,
-        50,
-        50
+        32,
+        32
       );
     });
   }
