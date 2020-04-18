@@ -6,7 +6,7 @@ export class Screen {
   private canvasElement: HTMLCanvasElement;
   private canvasContext: CanvasRenderingContext2D;
 
-  constructor(width: number = 560, height: number = 560) {
+  constructor(width: number = document.documentElement.clientWidth, height: number = document.documentElement.clientHeight) {
     this.width = width;
     this.height = height;
 

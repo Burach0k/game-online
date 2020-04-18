@@ -13,7 +13,7 @@ export class Play extends Scene {
   }
 
   init(): Promise<any> {
-    this.keyboardEventManager.subscribe('keydown', (data) => this.checkEvent(data.keyCode));
+    this.keyboardEventManager.subscribe('keydown', (data: KeyboardEvent) => this.checkEvent(data.keyCode));
 
     return this.loadResurces();
   }
@@ -23,11 +23,10 @@ export class Play extends Scene {
   }
 
   loadResurces(): Promise<any> {
-    let resolver: Function;
-    const loadingStatus = new Promise((resolve, reject) => (resolver = resolve));
-    this.tileMap.src = './sprites/lands/tilemap.png';
-    this.tileMap.addEventListener('load', () => resolver());
-    return loadingStatus;
+    return new Promise((res, rej) => {
+      this.tileMap.src = './sprites/lands/tilemap.png';
+      this.tileMap.addEventListener('load', () => res());
+    });
   }
 
   render(): void {

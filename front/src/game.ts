@@ -6,20 +6,30 @@ import { sceneNames } from './consts';
 export class Game {
   public screen: Screen;
   private scene: Scene;
+  private isLoading: boolean = false;
   public keyEventLoop: Array<number> = [];
 
   private render(time: number): void {
-    this.scene.render(this.screen);
+    if (this.isLoading) {
+      this.screen.renderBackground('red');
+    } else {
+      this.scene.render(this.screen);
+    }
     requestAnimationFrame((time) => this.render(time));
   }
 
   public changeScene(sceneName: sceneNames): void {
     const loadedScene = new scenes[sceneName](this.screen);
+    this.isLoading = true;
+
     loadedScene.onChangeScene((scene: sceneNames) => {
       this.changeScene(scene);
     });
-    //place for preloader
-    loadedScene.init().then(() => (this.scene = loadedScene));
+
+    loadedScene.init().then(() => {
+      this.scene = loadedScene;
+      this.isLoading = false;
+    });
   }
 
   public start(): void {

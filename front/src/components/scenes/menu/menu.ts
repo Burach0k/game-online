@@ -21,24 +21,12 @@ export class Menu extends Scene {
     super(screen);
   }
 
-  init(): Promise<any> {
+  async init(): Promise<any> {
     this.calculateelementPosition();
 
     this.keyboardEventManager.subscribe('keydown', (data) => this.changeMenuStatus(data.keyCode));
-
-    this.mouseEventManager.subscribe('mousemove', (data: MouseEvent) => {
-      const selectItem = this.getItemByCoordinate(data.clientX, data.clientY);
-
-      if (selectItem) this.chooseMenuItem(selectItem);
-    });
-
-    this.mouseEventManager.subscribe('click', (data: MouseEvent) => {
-      const selectItem = this.getItemByCoordinate(data.clientX, data.clientY);
-
-      if (selectItem) this.changeMenuStatus(data.type as keyCodes.Click);
-    });
-
-    return Promise.resolve();
+    this.mouseEventManager.subscribe('click', (data: MouseEvent) => this.clickEvent(data));
+    this.mouseEventManager.subscribe('mousemove', (data) => this.moveEvent(data));
   }
 
   getItemByCoordinate(x: number, y: number): TextComponent {
@@ -55,6 +43,21 @@ export class Menu extends Scene {
   render(): void {
     this.screen.renderBackground(menuConsts.backgraundColor);
     this.menuItems.forEach((item) => item.render(this.screen));
+  }
+
+  moveEvent(data: MouseEvent): void {
+    const selectItem = this.getItemByCoordinate(data.clientX, data.clientY);
+
+    if (selectItem) {
+      this.chooseElement = this.menuItems.findIndex((item) => item.text === selectItem.text);
+      this.chooseMenuItem(selectItem);
+    }
+  }
+
+  clickEvent(data: MouseEvent): void {
+    const selectItem = this.getItemByCoordinate(data.clientX, data.clientY);
+
+    if (selectItem) this.changeMenuStatus(data.type as keyCodes.Click);
   }
 
   changeMenuStatus(key: keyCodes): void {
