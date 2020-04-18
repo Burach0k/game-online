@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "webpack.config.js",
-  "dependencies": {},
+  "dependencies": {
+    "socket.io-client": "^2.3.0"
+  },
   "devDependencies": {
     "@babel/core": "^7.9.0",
     "webpack-dev-server": "^3.10.3",
