@@ -16,7 +16,9 @@ export class Play extends Scene {
   }
 
   init(): Promise<any> {
-    this.keyboardEventManager.subscribe('keydown', (data: KeyboardEvent) => this.checkEvent(data.keyCode));
+    this.keyboardEventManager.subscribe('keydown', (data: KeyboardEvent) =>
+      this.checkEvent(data.keyCode)
+    );
 
     return this.loadResurces();
   }
@@ -55,10 +57,10 @@ export class Play extends Scene {
         tile.tile_y * this.mapData.tileSize,
         this.mapData.tileSize,
         this.mapData.tileSize,
-        tile.map_x,
-        tile.map_y,
-        32,
-        32
+        tile.map_x * 50,
+        tile.map_y * 50,
+        50,
+        50
       );
     });
   }

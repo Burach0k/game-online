@@ -1,3 +1,5 @@
+import { MapGenerator } from './map-generator';
+
 const app = require('express')();
 const server = require('http').Server(app);
 const cors = require('cors');
@@ -14,10 +16,11 @@ app.get('/source_map', (req, res) => {
 
 const gameCoordinator = io.on('connection', (socket) => {
     gameSocket = socket;
+    const mapGenerator = new MapGenerator(100, 100);
 
     gameSocket.emit('data', {
-        tileSize: 16,
-        land: [{ tile_x: 0, tile_y: 0, map_x: 0, map_y: 0 }],
+        tileSize: 17,
+        land: mapGenerator.generateMap(),
     });
 });
 
