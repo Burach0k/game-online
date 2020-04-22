@@ -1,66 +1,88 @@
-import { ITile, tileInfo, tileVector } from '../models';
+import { ITile, tileInfo, tileVector, tileNeighbors, tilePart } from '../models';
 import {
-    export_road_part_1,
-    export_road_part_2,
-    export_road_part_3,
-    export_road_part_4,
-    export_road_part_5,
-    export_road_part_6,
-    export_road_part_7,
-    export_road_part_8,
-    export_road_part_9,
-    export_defaultTile,
+    ROAD_TILE_1,
+    ROAD_TILE_2,
+    ROAD_TILE_3,
+    ROAD_TILE_4,
+    ROAD_TILE_5,
+    ROAD_TILE_6,
+    ROAD_TILE_7,
+    ROAD_TILE_8,
+    ROAD_TILE_9,
 } from './constants';
 import { getRandomNumber } from '../../helpers/randomizer';
 
-export class GreenTile implements ITile {
-    private tilesCoordinates: tileInfo[] = [
-        export_road_part_1,
-        export_road_part_2,
-        export_road_part_3,
-        export_road_part_4,
-        export_road_part_5,
-        export_road_part_6,
-        export_road_part_7,
-        export_road_part_8,
-        export_road_part_9,
+export class RoadTile implements ITile {
+    private defaultChance: number = 0.1;
+    private tiles: tileInfo[] = [
+        ROAD_TILE_1,
+        ROAD_TILE_2,
+        ROAD_TILE_3,
+        ROAD_TILE_4,
+        ROAD_TILE_5,
+        ROAD_TILE_6,
+        ROAD_TILE_7,
+        ROAD_TILE_8,
+        ROAD_TILE_9,
     ];
 
-    isDrawn() {
-        return true;
-    }
-
-    getRandomTile(): tileInfo {
-        const possibleTyles = this.tilesCoordinates.filter((tile) => tile.possibleWays.down.length || tile.possibleWays.right.length);
-        return possibleTyles[getRandomNumber(0, possibleTyles.length - 1)];
-    }
-
-    findCorrectTyle(neighbors?: tileInfo[]): tileInfo {
-        const upNeighbor = neighbors[0];
-        const rightNeighbor = neighbors[1];
-
-        if (!upNeighbor && !rightNeighbor) {
-            return null;
-        }
-
-        if (upNeighbor && upNeighbor.possibleWays.down.length && rightNeighbor && rightNeighbor.possibleWays.right.length) {
-            const commonTiles = upNeighbor.possibleWays.down.filter((tile) => rightNeighbor.possibleWays.right.includes(tile));
-            const drawnTile = commonTiles.length ? commonTiles[getRandomNumber(0, commonTiles.length - 1)] : null;
-
-            if (drawnTile) {
-                return this.tilesCoordinates.find((tile) => tile.x === drawnTile.x && tile.y === drawnTile.y);
+    public calculateChance({ upNeighbor, leftNeighbor }: tileNeighbors): number {
+        if (
+            upNeighbor &&
+            leftNeighbor &&
+            upNeighbor.possibleWays.down.some((tile) => this.isNeighborRoad(tile)) &&
+            leftNeighbor.possibleWays.right.some((tile) => this.isNeighborRoad(tile))
+        ) {
+            const possibleTiles = upNeighbor.possibleWays.down
+                .filter((tile) => leftNeighbor.possibleWays.right.includes(tile))
+                .map((possibleTile) => this.tiles.find((tile) => possibleTile.tileY === tile.tileY && possibleTile.tileX === tile.tileX));
+            if (!possibleTiles.length) {
+                return 0;
             }
-            return export_defaultTile;
+            return 1;
+        } else if (upNeighbor && upNeighbor.possibleWays.down.some((tile) => this.isNeighborRoad(tile))) {
+            return 1;
+        } else if (leftNeighbor && leftNeighbor.possibleWays.right.some((tile) => this.isNeighborRoad(tile))) {
+            return 1;
+        } else {
+            return this.defaultChance;
+        }
+    }
+
+    public findCorrectTile({ upNeighbor, leftNeighbor }: tileNeighbors): tileInfo {
+        let possibleTiles: tileInfo[] = [];
+        if (
+            upNeighbor &&
+            leftNeighbor &&
+            upNeighbor.possibleWays.down.some((tile) => this.isNeighborRoad(tile)) &&
+            leftNeighbor.possibleWays.right.some((tile) => this.isNeighborRoad(tile))
+        ) {
+            possibleTiles = upNeighbor.possibleWays.down
+                .filter((tile) => leftNeighbor.possibleWays.right.includes(tile))
+                .map((possibleTile) => this.tiles.find((tile) => possibleTile.tileY === tile.tileY && possibleTile.tileX === tile.tileX));
+        } else if (upNeighbor && upNeighbor.possibleWays.down.some((tile) => this.isNeighborRoad(tile))) {
+            possibleTiles = upNeighbor.possibleWays.down.map((possibleTile) =>
+                this.tiles.find((tile) => possibleTile.tileY === tile.tileY && possibleTile.tileX === tile.tileX)
+            );
+        } else if (leftNeighbor && leftNeighbor.possibleWays.right.some((tile) => this.isNeighborRoad(tile))) {
+            possibleTiles = leftNeighbor.possibleWays.right.map((possibleTile) =>
+                this.tiles.find((tile) => possibleTile.tileY === tile.tileY && possibleTile.tileX === tile.tileX)
+            );
+        } else {
+            possibleTiles = [ROAD_TILE_1, ROAD_TILE_2, ROAD_TILE_3];
         }
 
-        if (upNeighbor && upNeighbor.possibleWays.down.length) {
-            const drawnTile = upNeighbor.possibleWays.down[getRandomNumber(0, upNeighbor.possibleWays.down.length - 1)];
-            return this.tilesCoordinates.find((tile) => tile.x === drawnTile.x && tile.y === drawnTile.y);
+        return this.getRandomTitle(possibleTiles);
+    }
+
+    private isNeighborRoad(tile: tilePart): boolean {
+        return Boolean(this.tiles.find((roadTIle) => roadTIle.tileX === tile.tileX && roadTIle.tileY === tile.tileY));
+    }
+
+    private getRandomTitle(tiles: tileInfo[]) {
+        if (tiles.includes(ROAD_TILE_5)) {
+            return ROAD_TILE_5;
         }
-        if (rightNeighbor && rightNeighbor.possibleWays.right.length) {
-            const drawnTile = rightNeighbor.possibleWays.right[getRandomNumber(0, rightNeighbor.possibleWays.right.length - 1)];
-            return this.tilesCoordinates.find((tile) => tile.x === drawnTile.x && tile.y === drawnTile.y);
-        }
-        return null;
+        return tiles[getRandomNumber(0, tiles.length - 1)];
     }
 }

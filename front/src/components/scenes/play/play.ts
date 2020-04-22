@@ -50,18 +50,20 @@ export class Play extends Scene {
   }
 
   render(): void {
-    this.mapData.land.forEach((tile) => {
-      this.screen.renderImg(
-        this.tileMap,
-        tile.tile_x * this.mapData.tileSize,
-        tile.tile_y * this.mapData.tileSize,
-        this.mapData.tileSize,
-        this.mapData.tileSize,
-        tile.map_x * 50,
-        tile.map_y * 50,
-        50,
-        50
-      );
+    this.mapData.land.forEach((tiles, yCoordinate) => {
+      tiles.forEach((tile, xCoordinate) => {
+        this.screen.renderImg(
+          this.tileMap,
+          tile.tileX * this.mapData.tileSize,
+          tile.tileY * this.mapData.tileSize,
+          this.mapData.tileSize,
+          this.mapData.tileSize,
+          xCoordinate * 50,
+          yCoordinate * 50,
+          50,
+          50
+        );
+      });
     });
   }
 

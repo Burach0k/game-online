@@ -1,4 +1,4 @@
-import { MapGenerator } from './map-generator';
+import { MapGenerator } from './tiles/map-generator/map-generator';
 
 const app = require('express')();
 const server = require('http').Server(app);
@@ -18,10 +18,7 @@ const gameCoordinator = io.on('connection', (socket) => {
     gameSocket = socket;
     const mapGenerator = new MapGenerator(100, 100);
 
-    gameSocket.emit('data', {
-        tileSize: 17,
-        land: mapGenerator.generateMap(),
-    });
+    gameSocket.emit('data', mapGenerator.generateMap());
 });
 
 server.listen(PORT);
