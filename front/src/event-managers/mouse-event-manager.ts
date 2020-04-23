@@ -1,5 +1,5 @@
+import { Screen } from '../screen/screen';
 import { EventManager, Subscription } from '../utils/event-manager';
-import { Screen } from '../components/canvas/canvas';
 
 export class MouseEventManager extends EventManager {
   protected subscribers: Array<{
@@ -11,27 +11,18 @@ export class MouseEventManager extends EventManager {
     super(screen);
   }
 
-  public subscribe(
-    eventName: string,
-    callback: (data: any) => void
-  ): Subscription {
-    if (
-      this.subscribers.find((subscriber) => subscriber.eventName === eventName)
-    ) {
+  public subscribe(eventName: string, callback: (data: any) => void): Subscription {
+    if (this.subscribers.find((subscriber) => subscriber.eventName === eventName)) {
       this.subscribers.push({ callback, eventName });
     } else {
-      this.screen.addEventListener(eventName, (data: any) =>
-        this.notify(eventName, data)
-      );
+      this.screen.addEventListener(eventName, (data: any) => this.notify(eventName, data));
       this.subscribers.push({ callback, eventName });
     }
 
     return {
       unsubscribe: () =>
         (this.subscribers = this.subscribers.filter(
-          (subscriber) =>
-            subscriber.eventName !== eventName ||
-            subscriber.callback !== callback
+          (subscriber) => subscriber.eventName !== eventName || subscriber.callback !== callback
         )),
     };
   }

@@ -1,31 +1,13 @@
-import { Screen } from '../components/canvas/canvas';
+import { Screen } from '../screen/screen';
+import { View } from './view';
 
 export abstract class Component {
-  private _x: number;
-  private _y: number;
-  public width: number;
-  public height: number;
+  public x: number;
+  public y: number;
 
-  get x() {
-    return this._x;
+  constructor(protected view: View) {}
+
+  render(canvas: Screen): void {
+    this.view.render(canvas);
   }
-
-  set x(x: number) {
-    this._x = x;
-  }
-
-  get y() {
-    return this._y;
-  }
-
-  set y(y: number) {
-    this._y = y;
-  }
-
-  constructor(height: number, width: number) {
-    this.width = width;
-    this.height = height;
-  }
-
-  abstract render(canvas: Screen): void;
 }

@@ -1,8 +1,8 @@
-import { Scene } from '../../../utils/scene';
-import { Screen } from '../../canvas/canvas';
-import { keyCodes, sceneNames, SEVER_DOMAIN } from '../../../consts';
-import { ScreenEventManager } from '../../../event-managers/keyboard-event-manager';
 import io from 'socket.io-client';
+import { Screen } from '../../screen/screen';
+import { Scene } from '../../utils/scene';
+import { sceneNames, SEVER_DOMAIN, keyCodes } from '../../consts';
+import { ScreenEventManager } from '../../event-managers/keyboard-event-manager';
 
 export class Play extends Scene {
   private callback: (scene: sceneNames) => void;

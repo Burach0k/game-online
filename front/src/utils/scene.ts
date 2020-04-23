@@ -1,5 +1,5 @@
-import { Screen } from '../components/canvas/canvas';
-import { sceneNames } from 'src/consts';
+import { Screen } from '../screen/screen';
+import { sceneNames } from '../consts';
 
 export abstract class Scene {
   public screen: Screen;

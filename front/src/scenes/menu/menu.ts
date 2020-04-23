@@ -1,20 +1,20 @@
-import { Scene } from '../../../utils/scene';
-import { Screen } from 'src/components/canvas/canvas';
-import { menuConsts, keyCodes, sceneNames } from '../../../consts';
-import { ScreenEventManager } from '../../../event-managers/keyboard-event-manager';
-import { MouseEventManager } from '../../../event-managers/mouse-event-manager';
-import { TextComponent } from '../../component/component';
+import { Scene } from '../../utils/scene';
+import { Screen } from '../../screen/screen';
+import { menuConsts, sceneNames, keyCodes } from '../../consts';
+import { ScreenEventManager } from '../../event-managers/keyboard-event-manager';
+import { MouseEventManager } from '../../event-managers/mouse-event-manager';
+import { TextComponent } from '../../components/text-component/text-component';
+import { TextView } from '../../components/text-component/text-view';
 
 export class Menu extends Scene {
-  private chooseElement = menuConsts.firstElement;
   private keyboardEventManager = new ScreenEventManager(this.screen);
   private mouseEventManager = new MouseEventManager(this.screen);
   private callback: (scene: sceneNames) => void;
 
   private menuItems: TextComponent[] = [
-    new TextComponent('New game', 30, 140),
-    new TextComponent('Continue', 30, 120),
-    new TextComponent('Exit', 30, 60),
+    new TextComponent(new TextView(30, 140), 'New game'),
+    new TextComponent(new TextView(30, 120), 'Continue'),
+    new TextComponent(new TextView(30, 60), 'Exit'),
   ];
 
   constructor(screen: Screen) {
@@ -49,7 +49,6 @@ export class Menu extends Scene {
     const selectItem = this.getItemByCoordinate(data.clientX, data.clientY);
 
     if (selectItem) {
-      this.chooseElement = this.menuItems.findIndex((item) => item.text === selectItem.text);
       this.chooseMenuItem(selectItem);
     }
   }
@@ -78,29 +77,42 @@ export class Menu extends Scene {
   }
 
   nextElement(): void {
-    const isLastElement = this.chooseElement === this.menuItems.length - 1;
-    this.chooseElement = isLastElement ? menuConsts.firstElement : this.chooseElement + 1;
+    const selectedItemIndex = this.menuItems.findIndex((item) => item.isFocused);
+    const isLastElement = selectedItemIndex === this.menuItems.length - 1;
+    const newSelectedItemIndex = isLastElement ? menuConsts.firstElement : selectedItemIndex + 1;
 
-    this.chooseMenuItem(this.menuItems[this.chooseElement]);
+    this.chooseMenuItem(this.menuItems[newSelectedItemIndex]);
   }
 
   previousElement(): void {
-    const isFirstElement = this.chooseElement === menuConsts.firstElement;
-    this.chooseElement = isFirstElement ? this.menuItems.length - 1 : this.chooseElement - 1;
+    const selectedItemIndex = this.menuItems.findIndex((item) => item.isFocused);
+    const isFirstElement = selectedItemIndex === menuConsts.firstElement;
+    const newSelectedItemIndex = isFirstElement ? this.menuItems.length - 1 : selectedItemIndex - 1;
 
-    this.chooseMenuItem(this.menuItems[this.chooseElement]);
+    this.chooseMenuItem(this.menuItems[newSelectedItemIndex]);
   }
 
   chooseMenuItem(textItem: TextComponent) {
-    const oldSelectItem = this.menuItems.find((item) => item.color === menuConsts.chooseColor);
+    this.menuItems.forEach((menuItem) => {
+      menuItem.isFocused = false;
+      menuItem.setColor(menuConsts.defaultColor);
+    });
 
-    oldSelectItem.color = menuConsts.defaultColor;
-    textItem.color = menuConsts.chooseColor;
+    textItem.isFocused = true;
+    textItem.setColor(menuConsts.chooseColor);
   }
 
   calculateelementPosition(): void {
     this.menuItems.forEach((item, index) => {
-      const color = index === 0 ? menuConsts.chooseColor : menuConsts.defaultColor;
+      let color;
+
+      if (index === 0) {
+        color = menuConsts.chooseColor;
+        item.isFocused = true;
+      } else {
+        color = menuConsts.defaultColor;
+        item.isFocused = false;
+      }
       item.setStyle(menuConsts.fontSize, 'center', color);
 
       item.x = this.screen.width / 2;

@@ -1,4 +1,4 @@
-import { TextComponent } from '../component/component';
+import { TextComponent } from '../components/text-component/text-component';
 
 export class Screen {
   public width: number;
@@ -6,7 +6,10 @@ export class Screen {
   private canvasElement: HTMLCanvasElement;
   private canvasContext: CanvasRenderingContext2D;
 
-  constructor(width: number = document.documentElement.clientWidth, height: number = document.documentElement.clientHeight) {
+  constructor(
+    width: number = document.documentElement.clientWidth,
+    height: number = document.documentElement.clientHeight
+  ) {
     this.width = width;
     this.height = height;
 
@@ -32,8 +35,8 @@ export class Screen {
     this.canvasContext.fillRect(0, 0, this.width, this.height);
   }
 
-  renderText(item: TextComponent): void {
-    this.canvasContext.fillText(item.text, item.x, item.y);
+  renderText(text: string, xCoordinate: number, yCoordinate: number): void {
+    this.canvasContext.fillText(text, xCoordinate, yCoordinate);
   }
 
   addEventListener(eventName: string, callback: (data: any) => void) {

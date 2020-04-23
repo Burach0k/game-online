@@ -1,6 +1,6 @@
-import { Screen } from './components/canvas/canvas';
+import { Screen } from './screen/screen';
 import { Scene } from './utils/scene';
-import { scenes } from './components/scenes/scenes';
+import { scenes } from './scenes/scenes';
 import { sceneNames } from './consts';
 
 export class Game {
