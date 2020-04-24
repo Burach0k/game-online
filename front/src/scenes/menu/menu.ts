@@ -1,13 +1,13 @@
 import { Scene } from '../../utils/scene';
 import { Screen } from '../../screen/screen';
 import { menuConsts, sceneNames, keyCodes } from '../../consts';
-import { ScreenEventManager } from '../../event-managers/keyboard-event-manager';
+import { KeyboardEventManager } from '../../event-managers/keyboard-event-manager';
 import { MouseEventManager } from '../../event-managers/mouse-event-manager';
 import { TextComponent } from '../../components/text-component/text-component';
 import { TextView } from '../../components/text-component/text-view';
 
 export class Menu extends Scene {
-  private keyboardEventManager = new ScreenEventManager(this.screen);
+  private keyboardEventManager = new KeyboardEventManager(this.screen);
   private mouseEventManager = new MouseEventManager(this.screen);
   private callback: (scene: sceneNames) => void;
 

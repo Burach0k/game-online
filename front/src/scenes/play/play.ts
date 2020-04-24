@@ -2,28 +2,37 @@ import io from 'socket.io-client';
 import { Screen } from '../../screen/screen';
 import { Scene } from '../../utils/scene';
 import { sceneNames, SEVER_DOMAIN, keyCodes } from '../../consts';
-import { ScreenEventManager } from '../../event-managers/keyboard-event-manager';
+import { KeyboardEventManager } from '../../event-managers/keyboard-event-manager';
+import { CharacterComponent } from '../../components/character-component/character-component';
+import { CharacterView } from '../../components/character-component/character-view';
 
 export class Play extends Scene {
   private callback: (scene: sceneNames) => void;
-  private keyboardEventManager = new ScreenEventManager(this.screen);
+  private keyboardEventManager = new KeyboardEventManager(this.screen);
   private tileMap: HTMLImageElement = new Image();
   private gameSocket;
   private mapData;
+  private character: CharacterComponent;
 
   constructor(screen: Screen) {
     super(screen);
   }
 
-  init(): Promise<any> {
+  public init(): Promise<any> {
     this.keyboardEventManager.subscribe('keydown', (data: KeyboardEvent) =>
       this.checkEvent(data.keyCode)
     );
 
-    return this.loadResurces();
+    this.keyboardEventManager.subscribe('keyup', (data: KeyboardEvent) => this.stopCharacterMove());
+
+    return this.loadResurces().then(() => {
+      this.character = new CharacterComponent(
+        new CharacterView(this.mapData.tileSize, this.mapData.tileSize, this.tileMap)
+      );
+    });
   }
 
-  loadResurces(): Promise<any> {
+  public loadResurces(): Promise<any> {
     this.gameSocket = io.connect(SEVER_DOMAIN);
     const dataPrimse = new Promise((resolve, reject) =>
       this.gameSocket.on('data', (data) => {
@@ -49,7 +58,48 @@ export class Play extends Scene {
     return Promise.all([dataPrimse, mapPomise]);
   }
 
-  render(): void {
+  public checkEvent(key: number): void {
+    switch (key) {
+      case keyCodes.Escape:
+        this.callback(sceneNames.Menu);
+        break;
+      case keyCodes.ArrowUp:
+        this.character.startMotion(this.character.x, this.character.y - 0.1);
+        if (this.checkNextCell(this.character.x, Math.floor(this.character.y - 0.1))) {
+          this.character.moveTo(this.character.x, this.character.y - 0.1);
+        }
+        break;
+      case keyCodes.ArrowDown:
+        this.character.startMotion(this.character.x, this.character.y + 0.1);
+        if (this.checkNextCell(this.character.x, Math.ceil(this.character.y + 0.1))) {
+          this.character.moveTo(this.character.x, this.character.y + 0.1);
+        }
+        break;
+      case keyCodes.ArrowLeft:
+        this.character.startMotion(this.character.x - 0.1, this.character.y);
+        if (this.checkNextCell(Math.floor(this.character.x - 0.1), this.character.y)) {
+          this.character.moveTo(this.character.x - 0.1, this.character.y);
+        }
+        break;
+      case keyCodes.ArrowRight:
+        this.character.startMotion(this.character.x + 0.1, this.character.y);
+        if (this.checkNextCell(Math.ceil(this.character.x + 0.1), this.character.y)) {
+          this.character.moveTo(this.character.x + 0.1, this.character.y);
+        }
+        break;
+    }
+  }
+
+  public onChangeScene(callback: (scene: sceneNames) => void): void {
+    this.callback = callback;
+  }
+
+  private stopCharacterMove(): void {
+    this.character.stopMotion();
+  }
+
+  public render(): void {
+    this.screen.renderBackground('green');
     this.mapData.land.forEach((tiles, yCoordinate) => {
       tiles.forEach((tile, xCoordinate) => {
         this.screen.renderImg(
@@ -64,18 +114,16 @@ export class Play extends Scene {
           50
         );
       });
+      this.character.render(this.screen);
     });
   }
 
-  checkEvent(key: number): void {
-    switch (key) {
-      case keyCodes.Escape:
-        this.callback(sceneNames.Menu);
-        break;
-    }
-  }
-
-  onChangeScene(callback: (scene: sceneNames) => void): void {
-    this.callback = callback;
+  private checkNextCell(xCoordinate: number, yCoordinate: number): boolean {
+    return !(
+      this.mapData.land[Math.floor(+yCoordinate.toFixed(2))][Math.floor(+xCoordinate.toFixed(2))]
+        .isBarrier ||
+      this.mapData.land[Math.ceil(+yCoordinate.toFixed(2))][Math.ceil(+xCoordinate.toFixed(2))]
+        .isBarrier
+    );
   }
 }

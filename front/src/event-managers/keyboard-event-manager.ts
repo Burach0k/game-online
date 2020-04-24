@@ -1,6 +1,6 @@
 import { EventManager, Subscription } from '../utils/event-manager';
 import { Screen } from '../screen/screen';
-export class ScreenEventManager extends EventManager {
+export class KeyboardEventManager extends EventManager {
   protected subscribers: Array<{
     callback: (data: any) => void;
     eventName: string;
