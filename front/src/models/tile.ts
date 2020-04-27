@@ -1,1 +1,4 @@
-export type tileCoordinates = { x: number; y: number };
+export interface ICoordinates {
+  x: number;
+  y: number;
+}

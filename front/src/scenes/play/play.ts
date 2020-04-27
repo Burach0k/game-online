@@ -5,6 +5,10 @@ import { sceneNames, SEVER_DOMAIN, keyCodes } from '../../consts';
 import { KeyboardEventManager } from '../../event-managers/keyboard-event-manager';
 import { CharacterComponent } from '../../components/character-component/character-component';
 import { CharacterView } from '../../components/character-component/character-view';
+import { Direction } from '../../models/direction';
+import { ICoordinates } from '../../models/tile';
+import { Subscription } from '../../utils/event-manager';
+import { throttle } from '../../helpers/throttle.decorator';
 
 export class Play extends Scene {
   private callback: (scene: sceneNames) => void;
@@ -12,31 +16,80 @@ export class Play extends Scene {
   private tileMap: HTMLImageElement = new Image();
   private gameSocket;
   private mapData;
-  private character: CharacterComponent;
+  private mainCharacter: CharacterComponent;
+  private characters: CharacterComponent[] = [];
+  private subscriptions: Subscription[] = [];
+
+  private nextCharacterCellCalculator: {
+    [key in Direction]: (character: CharacterComponent) => ICoordinates;
+  } = {
+    [Direction.Right]: (character) => ({
+      x: Math.ceil(character.x + character.speed),
+      y: character.y,
+    }),
+    [Direction.Left]: (character) => ({
+      x: Math.floor(character.x - character.speed),
+      y: character.y,
+    }),
+    [Direction.Up]: (character) => ({
+      x: character.x,
+      y: Math.floor(character.y - character.speed),
+    }),
+    [Direction.Down]: (character) => ({
+      x: character.x,
+      y: Math.ceil(character.y + character.speed),
+    }),
+    [Direction.Stop]: (character) => ({ x: character.x, y: character.y }),
+  };
 
   constructor(screen: Screen) {
     super(screen);
   }
 
   public init(): Promise<any> {
-    this.keyboardEventManager.subscribe('keydown', (data: KeyboardEvent) =>
-      this.checkEvent(data.keyCode)
+    this.subscriptions.push(
+      this.keyboardEventManager.subscribe('keydown', (data: KeyboardEvent) => {
+        if (!data.repeat) {
+          this.setCharacterDirection(this.mainCharacter, data.keyCode);
+        }
+      }),
+
+      this.keyboardEventManager.subscribe('keyup', (data: KeyboardEvent) =>
+        this.stopCharacterMove(this.mainCharacter)
+      )
     );
 
-    this.keyboardEventManager.subscribe('keyup', (data: KeyboardEvent) => this.stopCharacterMove());
-
     return this.loadResurces().then(() => {
-      this.character = new CharacterComponent(
-        new CharacterView(this.mapData.tileSize, this.mapData.tileSize, this.tileMap)
+      this.mainCharacter = new CharacterComponent(
+        new CharacterView(
+          this.mapData.tileSize,
+          this.mapData.tileSize,
+          { x: 23, y: 0 },
+          this.tileMap
+        )
+      );
+
+      this.characters.push(
+        new CharacterComponent(
+          new CharacterView(
+            this.mapData.tileSize,
+            this.mapData.tileSize,
+            { x: 23, y: 6 },
+            this.tileMap
+          )
+        )
       );
     });
+  }
+
+  public destroy(): void {
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
   }
 
   public loadResurces(): Promise<any> {
     this.gameSocket = io.connect(SEVER_DOMAIN);
     const dataPrimse = new Promise((resolve, reject) =>
       this.gameSocket.on('data', (data) => {
-        console.log(data);
         if (!this.mapData) {
           resolve();
         }
@@ -63,30 +116,6 @@ export class Play extends Scene {
       case keyCodes.Escape:
         this.callback(sceneNames.Menu);
         break;
-      case keyCodes.ArrowUp:
-        this.character.startMotion(this.character.x, this.character.y - 0.1);
-        if (this.checkNextCell(this.character.x, Math.floor(this.character.y - 0.1))) {
-          this.character.moveTo(this.character.x, this.character.y - 0.1);
-        }
-        break;
-      case keyCodes.ArrowDown:
-        this.character.startMotion(this.character.x, this.character.y + 0.1);
-        if (this.checkNextCell(this.character.x, Math.ceil(this.character.y + 0.1))) {
-          this.character.moveTo(this.character.x, this.character.y + 0.1);
-        }
-        break;
-      case keyCodes.ArrowLeft:
-        this.character.startMotion(this.character.x - 0.1, this.character.y);
-        if (this.checkNextCell(Math.floor(this.character.x - 0.1), this.character.y)) {
-          this.character.moveTo(this.character.x - 0.1, this.character.y);
-        }
-        break;
-      case keyCodes.ArrowRight:
-        this.character.startMotion(this.character.x + 0.1, this.character.y);
-        if (this.checkNextCell(Math.ceil(this.character.x + 0.1), this.character.y)) {
-          this.character.moveTo(this.character.x + 0.1, this.character.y);
-        }
-        break;
     }
   }
 
@@ -94,11 +123,66 @@ export class Play extends Scene {
     this.callback = callback;
   }
 
-  private stopCharacterMove(): void {
-    this.character.stopMotion();
+  public render(): void {
+    this.renderMap();
+    this.moveCharacter(this.mainCharacter);
+    this.mainCharacter.render(this.screen);
+    this.characters.forEach((character) => {
+      this.setCharacterRandomDirection(character);
+      this.moveCharacter(character);
+      character.render(this.screen);
+    });
   }
 
-  public render(): void {
+  private setCharacterDirection(character: CharacterComponent, keyboardCode: number) {
+    switch (keyboardCode) {
+      case keyCodes.ArrowUp:
+        character.startMotion(Direction.Up);
+        break;
+      case keyCodes.ArrowDown:
+        character.startMotion(Direction.Down);
+        break;
+      case keyCodes.ArrowLeft:
+        character.startMotion(Direction.Left);
+        break;
+      case keyCodes.ArrowRight:
+        character.startMotion(Direction.Right);
+        break;
+    }
+  }
+
+  private moveCharacter(character: CharacterComponent): void {
+    if (this.checkNextCell(this.nextCharacterCellCalculator[character.direction](character))) {
+      const nextCharacterPosition = character.calculateNextCoordinates();
+      character.moveTo(nextCharacterPosition.x, nextCharacterPosition.y);
+    }
+  }
+
+  @throttle(1000)
+  private setCharacterRandomDirection(character: CharacterComponent): void {
+    const possibleDirections = Object.keys(Direction);
+    const direction =
+      Direction[possibleDirections[Math.round(Math.random() * (possibleDirections.length - 1))]];
+
+    character.startMotion(direction);
+  }
+
+  private stopCharacterMove(character: CharacterComponent): void {
+    character.stopMotion();
+  }
+
+  private checkNextCell({ x, y }: ICoordinates): boolean {
+    if (x < 0 || y < 0) {
+      return false;
+    }
+    return !(
+      this.mapData.land[Math.floor(Number(y.toFixed(2)))][Math.floor(Number(x.toFixed(2)))]
+        .isBarrier ||
+      this.mapData.land[Math.ceil(Number(y.toFixed(2)))][Math.ceil(Number(x.toFixed(2)))].isBarrier
+    );
+  }
+
+  private renderMap(): void {
     this.screen.renderBackground('green');
     this.mapData.land.forEach((tiles, yCoordinate) => {
       tiles.forEach((tile, xCoordinate) => {
@@ -114,16 +198,6 @@ export class Play extends Scene {
           50
         );
       });
-      this.character.render(this.screen);
     });
-  }
-
-  private checkNextCell(xCoordinate: number, yCoordinate: number): boolean {
-    return !(
-      this.mapData.land[Math.floor(+yCoordinate.toFixed(2))][Math.floor(+xCoordinate.toFixed(2))]
-        .isBarrier ||
-      this.mapData.land[Math.ceil(+yCoordinate.toFixed(2))][Math.ceil(+xCoordinate.toFixed(2))]
-        .isBarrier
-    );
   }
 }

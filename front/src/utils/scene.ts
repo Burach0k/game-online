@@ -14,4 +14,6 @@ export abstract class Scene {
   abstract render(canvas: Screen): void;
 
   abstract onChangeScene(callback: (scene: sceneNames) => void): void;
+
+  abstract destroy(): void;
 }

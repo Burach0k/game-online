@@ -23,6 +23,7 @@ export class Game {
     this.isLoading = true;
 
     loadedScene.onChangeScene((scene: sceneNames) => {
+      this.scene.destroy();
       this.changeScene(scene);
     });
 

@@ -1,35 +1,33 @@
 import { View } from '../../utils/view';
-import { tileCoordinates } from '../../models/tile';
+import { ICoordinates } from '../../models/tile';
 import { Direction } from '../../models/direction';
 import { Screen } from '../../screen/screen';
 
 export class CharacterView extends View {
-  private goRightTiles: tileCoordinates[] = [
-    { x: 26, y: 0 },
-    { x: 26, y: 1 },
-    { x: 26, y: 2 },
-  ];
-  private goLeftTiles: tileCoordinates[] = [
-    { x: 23, y: 0 },
-    { x: 23, y: 1 },
-    { x: 23, y: 2 },
-  ];
-  private goDownTiles: tileCoordinates[] = [
-    { x: 24, y: 0 },
-    { x: 24, y: 1 },
-    { x: 24, y: 2 },
-  ];
-  private goUpTiles: tileCoordinates[] = [
-    { x: 25, y: 0 },
-    { x: 25, y: 1 },
-    { x: 25, y: 2 },
-  ];
+  private goRightTiles: ICoordinates[] = [];
+  private goLeftTiles: ICoordinates[] = [];
+  private goDownTiles: ICoordinates[] = [];
+  private goUpTiles: ICoordinates[] = [];
 
-  private selectedTiles: tileCoordinates[] = [this.goDownTiles[0]];
+  private selectedTiles: ICoordinates[];
   private selectedIndexTile: number = 0;
 
-  constructor(height: number, width: number, private tilesImage: HTMLImageElement) {
+  constructor(
+    height: number,
+    width: number,
+    firstTile: ICoordinates,
+    private tilesImage: HTMLImageElement
+  ) {
     super(height, width);
+    //TODO rewrite logic for generation ui of component
+    for (let index = 0; index < 3; index++) {
+      this.goLeftTiles.push({ x: firstTile.x, y: firstTile.y + index });
+      this.goDownTiles.push({ x: firstTile.x + 1, y: firstTile.y + index });
+      this.goUpTiles.push({ x: firstTile.x + 2, y: firstTile.y + index });
+      this.goRightTiles.push({ x: firstTile.x + 3, y: firstTile.y + index });
+    }
+
+    this.selectedTiles = [this.goDownTiles[0]];
   }
 
   public setDirection(direction: Direction) {
