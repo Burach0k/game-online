@@ -5,7 +5,7 @@ import { Direction } from '../../models/direction';
 import { ICoordinates } from '../../models/tile';
 
 export class CharacterComponent extends Component {
-  public speed: number = 0.1;
+  public speed: number = 4;
   public direction: Direction = Direction.Stop;
   private nextPositionCalculator: { [key in Direction]: (x: number, y: number) => ICoordinates } = {
     [Direction.Right]: (x, y) => ({ x: x + this.speed, y }),
@@ -17,8 +17,8 @@ export class CharacterComponent extends Component {
 
   constructor(protected view: CharacterView) {
     super(view);
-    this.x = 10;
-    this.y = 10;
+    this.x = 500;
+    this.y = 500;
     this.view.setDirection(this.direction);
   }
 
@@ -27,11 +27,8 @@ export class CharacterComponent extends Component {
   }
 
   public moveTo(xCoordinate: number, yCoordinate: number): void {
-    const newXCoordinate = Math.round(xCoordinate * 10) / 10;
-    const newYCoordinate = Math.round(yCoordinate * 10) / 10;
-
-    this.x = newXCoordinate;
-    this.y = newYCoordinate;
+    this.x = xCoordinate;
+    this.y = yCoordinate;
   }
 
   public stopMotion(): void {

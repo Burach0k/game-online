@@ -2,6 +2,7 @@ import { View } from '../../utils/view';
 import { ICoordinates } from '../../models/tile';
 import { Direction } from '../../models/direction';
 import { Screen } from '../../screen/screen';
+import { tileSize } from '../../consts';
 
 export class CharacterView extends View {
   private goRightTiles: ICoordinates[] = [];
@@ -60,10 +61,10 @@ export class CharacterView extends View {
       this.selectedTiles[this.selectedIndexTile].y * this.width,
       this.height,
       this.width,
-      xCoordinate * 50,
-      yCoordinate * 50,
-      50,
-      50
+      xCoordinate,
+      yCoordinate,
+      tileSize,
+      tileSize
     );
 
     this.updateTileIndex();

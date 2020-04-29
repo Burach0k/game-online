@@ -1,5 +1,3 @@
-import { TextComponent } from '../components/text-component/text-component';
-
 export class Screen {
   public width: number;
   public height: number;

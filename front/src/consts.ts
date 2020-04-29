@@ -16,6 +16,8 @@ export const menuConsts = {
   fontSize: 30,
 };
 
+export const tileSize = 50;
+
 export enum sceneNames {
   Play = 'Play',
   Menu = 'Menu',

@@ -6,41 +6,19 @@ import { KeyboardEventManager } from '../../event-managers/keyboard-event-manage
 import { CharacterComponent } from '../../components/character-component/character-component';
 import { CharacterView } from '../../components/character-component/character-view';
 import { Direction } from '../../models/direction';
-import { ICoordinates } from '../../models/tile';
 import { Subscription } from '../../utils/event-manager';
 import { throttle } from '../../helpers/throttle.decorator';
+import { gameMap } from '../../game-map/game-map';
 
 export class Play extends Scene {
   private callback: (scene: sceneNames) => void;
   private keyboardEventManager = new KeyboardEventManager(this.screen);
-  private tileMap: HTMLImageElement = new Image();
+  private tileImages: HTMLImageElement = new Image();
   private gameSocket;
-  private mapData;
+  private map: gameMap;
   private mainCharacter: CharacterComponent;
   private characters: CharacterComponent[] = [];
   private subscriptions: Subscription[] = [];
-
-  private nextCharacterCellCalculator: {
-    [key in Direction]: (character: CharacterComponent) => ICoordinates;
-  } = {
-    [Direction.Right]: (character) => ({
-      x: Math.ceil(character.x + character.speed),
-      y: character.y,
-    }),
-    [Direction.Left]: (character) => ({
-      x: Math.floor(character.x - character.speed),
-      y: character.y,
-    }),
-    [Direction.Up]: (character) => ({
-      x: character.x,
-      y: Math.floor(character.y - character.speed),
-    }),
-    [Direction.Down]: (character) => ({
-      x: character.x,
-      y: Math.ceil(character.y + character.speed),
-    }),
-    [Direction.Stop]: (character) => ({ x: character.x, y: character.y }),
-  };
 
   constructor(screen: Screen) {
     super(screen);
@@ -59,25 +37,22 @@ export class Play extends Scene {
       )
     );
 
-    return this.loadResurces().then(() => {
+    return this.loadResurces().then(([mapData]) => {
       this.mainCharacter = new CharacterComponent(
-        new CharacterView(
-          this.mapData.tileSize,
-          this.mapData.tileSize,
-          { x: 23, y: 0 },
-          this.tileMap
-        )
+        new CharacterView(mapData.tileSize, mapData.tileSize, { x: 23, y: 0 }, this.tileImages)
       );
 
       this.characters.push(
         new CharacterComponent(
-          new CharacterView(
-            this.mapData.tileSize,
-            this.mapData.tileSize,
-            { x: 23, y: 6 },
-            this.tileMap
-          )
+          new CharacterView(mapData.tileSize, mapData.tileSize, { x: 23, y: 6 }, this.tileImages)
         )
+      );
+
+      this.map = new gameMap(this.screen, this.tileImages);
+      this.map.setMapConfig(mapData);
+
+      [this.mainCharacter, ...this.characters].forEach((component) =>
+        this.map.registerComponent(component)
       );
     });
   }
@@ -89,11 +64,8 @@ export class Play extends Scene {
   public loadResurces(): Promise<any> {
     this.gameSocket = io.connect(SEVER_DOMAIN);
     const dataPrimse = new Promise((resolve, reject) =>
-      this.gameSocket.on('data', (data) => {
-        if (!this.mapData) {
-          resolve();
-        }
-        this.mapData = data;
+      this.gameSocket.on('data', (mapData) => {
+        resolve(mapData);
       })
     );
 
@@ -103,8 +75,8 @@ export class Play extends Scene {
         return new Promise((resolve, reject) => {
           const blob = new Blob([buffer], { type: 'image/png' });
           const imageUrl = window.URL.createObjectURL(blob);
-          this.tileMap.src = imageUrl;
-          this.tileMap.addEventListener('load', resolve);
+          this.tileImages.src = imageUrl;
+          this.tileImages.addEventListener('load', resolve);
         });
       });
 
@@ -124,14 +96,11 @@ export class Play extends Scene {
   }
 
   public render(): void {
-    this.renderMap();
-    this.moveCharacter(this.mainCharacter);
-    this.mainCharacter.render(this.screen);
     this.characters.forEach((character) => {
       this.setCharacterRandomDirection(character);
-      this.moveCharacter(character);
-      character.render(this.screen);
     });
+
+    this.map.render();
   }
 
   private setCharacterDirection(character: CharacterComponent, keyboardCode: number) {
@@ -151,13 +120,6 @@ export class Play extends Scene {
     }
   }
 
-  private moveCharacter(character: CharacterComponent): void {
-    if (this.checkNextCell(this.nextCharacterCellCalculator[character.direction](character))) {
-      const nextCharacterPosition = character.calculateNextCoordinates();
-      character.moveTo(nextCharacterPosition.x, nextCharacterPosition.y);
-    }
-  }
-
   @throttle(1000)
   private setCharacterRandomDirection(character: CharacterComponent): void {
     const possibleDirections = Object.keys(Direction);
@@ -169,35 +131,5 @@ export class Play extends Scene {
 
   private stopCharacterMove(character: CharacterComponent): void {
     character.stopMotion();
-  }
-
-  private checkNextCell({ x, y }: ICoordinates): boolean {
-    if (x < 0 || y < 0) {
-      return false;
-    }
-    return !(
-      this.mapData.land[Math.floor(Number(y.toFixed(2)))][Math.floor(Number(x.toFixed(2)))]
-        .isBarrier ||
-      this.mapData.land[Math.ceil(Number(y.toFixed(2)))][Math.ceil(Number(x.toFixed(2)))].isBarrier
-    );
-  }
-
-  private renderMap(): void {
-    this.screen.renderBackground('green');
-    this.mapData.land.forEach((tiles, yCoordinate) => {
-      tiles.forEach((tile, xCoordinate) => {
-        this.screen.renderImg(
-          this.tileMap,
-          tile.tileX * this.mapData.tileSize,
-          tile.tileY * this.mapData.tileSize,
-          this.mapData.tileSize,
-          this.mapData.tileSize,
-          xCoordinate * 50,
-          yCoordinate * 50,
-          50,
-          50
-        );
-      });
-    });
   }
 }
