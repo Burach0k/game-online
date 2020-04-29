@@ -81,8 +81,25 @@ export class RoadTile implements ITile {
 
     private getRandomTitle(tiles: tileInfo[]) {
         if (tiles.includes(ROAD_TILE_5)) {
-            return ROAD_TILE_5;
+            return getRandomNumber(0, 99) < 80 ? tiles[getRandomNumber(0, tiles.length - 1)] : ROAD_TILE_5;
         }
+
+        if (tiles.includes(ROAD_TILE_2)) {
+            return getRandomNumber(0, 99) < 50 ? tiles[getRandomNumber(0, tiles.length - 1)] : ROAD_TILE_2;
+        }
+
+        if (tiles.includes(ROAD_TILE_4)) {
+            return getRandomNumber(0, 99) < 50 ? tiles[getRandomNumber(0, tiles.length - 1)] : ROAD_TILE_4;
+        }
+
+        if (tiles.includes(ROAD_TILE_6)) {
+            return getRandomNumber(0, 99) < 70 ? tiles[getRandomNumber(0, tiles.length - 1)] : ROAD_TILE_5;
+        }
+
+        if (tiles.includes(ROAD_TILE_8)) {
+            return getRandomNumber(0, 99) < 70 ? tiles[getRandomNumber(0, tiles.length - 1)] : ROAD_TILE_5;
+        }
+
         return tiles[getRandomNumber(0, tiles.length - 1)];
     }
 }
