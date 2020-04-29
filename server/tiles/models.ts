@@ -13,3 +13,5 @@ export type tileNeighbors = { upNeighbor: tileInfo; leftNeighbor: tileInfo };
 
 export type tilePart = { tileX: number; tileY: number };
 export type tileInfo = tilePart & { isBarrier: boolean; possibleWays: tileVector };
+
+export type forestOutline = { top: tilePart[]; bottom: tilePart[]; left: tilePart[]; right: tilePart[] };

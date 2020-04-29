@@ -20,7 +20,11 @@ export const ROAD_TILE_2: tileInfo = {
     isBarrier: false,
     possibleWays: { down: [ROAD_PART_5, ROAD_PART_8], right: [ROAD_PART_2, ROAD_PART_3] },
 };
-export const ROAD_TILE_3: tileInfo = { ...ROAD_PART_3, isBarrier: false, possibleWays: { down: [ROAD_PART_6, ROAD_PART_9], right: [] } };
+export const ROAD_TILE_3: tileInfo = {
+    ...ROAD_PART_3,
+    isBarrier: false,
+    possibleWays: { down: [ROAD_PART_6, ROAD_PART_9], right: [ROAD_PART_1, ROAD_PART_4, ROAD_PART_7] },
+};
 export const ROAD_TILE_4: tileInfo = {
     ...ROAD_PART_4,
     isBarrier: false,
@@ -34,8 +38,20 @@ export const ROAD_TILE_5: tileInfo = {
 export const ROAD_TILE_6: tileInfo = {
     ...ROAD_PART_6,
     isBarrier: false,
-    possibleWays: { down: [ROAD_PART_6, ROAD_PART_9], right: [] },
+    possibleWays: { down: [ROAD_PART_6, ROAD_PART_9], right: [ROAD_PART_4, ROAD_PART_1, ROAD_PART_7] },
 };
-export const ROAD_TILE_7: tileInfo = { ...ROAD_PART_7, isBarrier: false, possibleWays: { down: [], right: [ROAD_PART_8, ROAD_PART_9] } };
-export const ROAD_TILE_8: tileInfo = { ...ROAD_PART_8, isBarrier: false, possibleWays: { down: [], right: [] } };
-export const ROAD_TILE_9: tileInfo = { ...ROAD_PART_9, isBarrier: false, possibleWays: { down: [], right: [ROAD_PART_8, ROAD_PART_9] } };
+export const ROAD_TILE_7: tileInfo = {
+    ...ROAD_PART_7,
+    isBarrier: false,
+    possibleWays: { down: [ROAD_PART_1, ROAD_PART_2, ROAD_PART_3], right: [ROAD_PART_8, ROAD_PART_9] },
+};
+export const ROAD_TILE_8: tileInfo = {
+    ...ROAD_PART_8,
+    isBarrier: false,
+    possibleWays: { down: [ROAD_PART_2, ROAD_PART_1, ROAD_PART_3], right: [ROAD_PART_8, ROAD_PART_9] },
+};
+export const ROAD_TILE_9: tileInfo = {
+    ...ROAD_PART_9,
+    isBarrier: false,
+    possibleWays: { down: [ROAD_PART_1, ROAD_PART_2, ROAD_PART_3], right: [ROAD_PART_1, ROAD_PART_4, ROAD_PART_7] },
+};
