@@ -9,6 +9,7 @@ import { Direction } from '../../models/direction';
 import { Subscription } from '../../utils/event-manager';
 import { throttle } from '../../helpers/throttle.decorator';
 import { gameMap } from '../../game-map/game-map';
+import { DayPeriods } from '../../game-map/game-map.model';
 
 export class Play extends Scene {
   private callback: (scene: sceneNames) => void;
@@ -55,6 +56,55 @@ export class Play extends Scene {
       [this.mainCharacter, ...this.characters].forEach((component) =>
         this.map.addComponent(component)
       );
+
+      //this code below will be removed, only for demonstarate new functionality
+      let select = document.createElement('select');
+      select.style.position = 'absolute';
+      select.style.left = '0px';
+
+      let option = document.createElement('option');
+      option.setAttribute('value', DayPeriods.Day);
+      option.text = 'set day period';
+      select.appendChild(option);
+
+      option = document.createElement('option');
+      option.setAttribute('value', DayPeriods.Night);
+      option.text = 'set night period';
+      select.appendChild(option);
+
+      select.addEventListener(
+        'change',
+        ((select) => {
+          debugger;
+          this.map.setTime(select.value as DayPeriods);
+        }).bind(null, select)
+      );
+
+      document.body.appendChild(select);
+
+      select = document.createElement('select');
+      select.style.position = 'absolute';
+      select.style.right = '0px';
+
+      option = document.createElement('option');
+      option.setAttribute('value', 'mainCharacter');
+      option.text = 'view main character';
+      select.appendChild(option);
+
+      option = document.createElement('option');
+      option.setAttribute('value', 'npc');
+      option.text = 'view npc';
+      select.appendChild(option);
+
+      select.addEventListener('change', () => {
+        if (select.value === 'mainCharacter') {
+          this.map.followCameraForComponent(this.mainCharacter);
+        } else {
+          this.map.followCameraForComponent(this.characters[0]);
+        }
+      });
+
+      document.body.appendChild(select);
     });
   }
 

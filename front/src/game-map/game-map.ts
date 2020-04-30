@@ -1,4 +1,10 @@
-import { IMapConfig, screenTileSize, tileBoxCoefficient } from './game-map.model';
+import {
+  IMapConfig,
+  screenTileSize,
+  tileBoxCoefficient,
+  DayPeriods,
+  ColorOfDayPeriods,
+} from './game-map.model';
 import { Screen } from '../screen/screen';
 import { ICoordinates } from '../models/tile';
 import { CharacterComponent } from '../components/character-component/character-component';
@@ -9,6 +15,8 @@ export class gameMap {
   private mapConfig: IMapConfig;
   private components: CharacterComponent[] = [];
   private mapCamera: Camera = new Camera(this.screen.width, this.screen.height);
+  private dayPeriod: DayPeriods = DayPeriods.Day;
+  private backgroudColor: ColorOfDayPeriods = ColorOfDayPeriods.Day;
 
   constructor(private screen: Screen, private tilesImage: HTMLImageElement) {}
 
@@ -25,7 +33,7 @@ export class gameMap {
   }
 
   public render(): void {
-    this.screen.renderBackground('green');
+    this.screen.renderBackground(this.backgroudColor);
 
     //need to calculate next position for all characters
     this.components.forEach((component) => {
@@ -43,24 +51,72 @@ export class gameMap {
     });
   }
 
+  public setTime(dayPeriod: DayPeriods) {
+    this.dayPeriod = dayPeriod;
+    this.backgroudColor = ColorOfDayPeriods[dayPeriod];
+  }
+
   private renderMap(): void {
     this.mapConfig.land.forEach((tiles, yTileIndex) => {
       tiles.forEach((tile, xTileIndex) => {
         if (
           this.mapCamera.isCameraShownArea(xTileIndex * screenTileSize, yTileIndex * screenTileSize)
         ) {
-          this.screen.renderImg(
-            this.tilesImage,
-            //TODO: make this calculation in backend
-            tile.tileX * this.mapConfig.tileSize,
-            tile.tileY * this.mapConfig.tileSize,
-            this.mapConfig.tileSize,
-            this.mapConfig.tileSize,
-            xTileIndex * screenTileSize,
-            yTileIndex * screenTileSize,
-            screenTileSize,
-            screenTileSize
-          );
+          if (this.dayPeriod === DayPeriods.Night) {
+            const components = this.components.filter((component) =>
+              component.isCharecterSeeArea(xTileIndex * screenTileSize, yTileIndex * screenTileSize)
+            );
+
+            components.forEach((component) => {
+              let xDifference = this.getWayDifferenceToTile(
+                xTileIndex * screenTileSize,
+                component.x,
+                component.radius
+              );
+
+              let yDifference = this.getWayDifferenceToTile(
+                yTileIndex * screenTileSize,
+                component.y,
+                component.radius
+              );
+
+              this.screen.renderImg(
+                this.tilesImage,
+                //TODO: make this calculation in backend
+                tile.tileX * this.mapConfig.tileSize -
+                  (Math.min(0, xDifference) / screenTileSize) * this.mapConfig.tileSize,
+
+                tile.tileY * this.mapConfig.tileSize -
+                  (Math.min(0, yDifference) / screenTileSize) * this.mapConfig.tileSize,
+
+                this.mapConfig.tileSize -
+                  (Math.abs(xDifference) / screenTileSize) * this.mapConfig.tileSize,
+
+                this.mapConfig.tileSize -
+                  (Math.abs(yDifference) / screenTileSize) * this.mapConfig.tileSize,
+
+                xTileIndex * screenTileSize - Math.min(0, xDifference),
+
+                yTileIndex * screenTileSize - Math.min(0, yDifference),
+
+                screenTileSize - Math.abs(xDifference),
+                screenTileSize - Math.abs(yDifference)
+              );
+            });
+          } else {
+            this.screen.renderImg(
+              this.tilesImage,
+              //TODO: make this calculation in backend
+              tile.tileX * this.mapConfig.tileSize,
+              tile.tileY * this.mapConfig.tileSize,
+              this.mapConfig.tileSize,
+              this.mapConfig.tileSize,
+              xTileIndex * screenTileSize,
+              yTileIndex * screenTileSize,
+              screenTileSize,
+              screenTileSize
+            );
+          }
         }
       });
     });
@@ -91,5 +147,27 @@ export class gameMap {
       });
     });
     return !overflowTiles.some((tile) => tile.isBarrier);
+  }
+
+  private getWayDifferenceToTile(
+    tileCoordinate: number,
+    componentCoordinate: number,
+    componentRadius: number
+  ): number {
+    let difference = Math.min(
+      0,
+      tileCoordinate - (componentCoordinate + screenTileSize / 2 - componentRadius)
+    );
+
+    difference =
+      difference ||
+      Math.max(
+        0,
+        tileCoordinate +
+          screenTileSize -
+          (componentCoordinate + screenTileSize / 2 + componentRadius)
+      );
+
+    return difference;
   }
 }
