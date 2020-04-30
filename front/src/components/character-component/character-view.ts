@@ -2,7 +2,7 @@ import { View } from '../../utils/view';
 import { ICoordinates } from '../../models/tile';
 import { Direction } from '../../models/direction';
 import { Screen } from '../../screen/screen';
-import { tileSize } from '../../consts';
+import { screenTileSize } from '../../game-map/game-map.model';
 
 export class CharacterView extends View {
   private goRightTiles: ICoordinates[] = [];
@@ -63,8 +63,8 @@ export class CharacterView extends View {
       this.width,
       xCoordinate,
       yCoordinate,
-      tileSize,
-      tileSize
+      screenTileSize,
+      screenTileSize
     );
 
     this.updateTileIndex();

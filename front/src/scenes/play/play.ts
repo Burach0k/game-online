@@ -50,9 +50,10 @@ export class Play extends Scene {
 
       this.map = new gameMap(this.screen, this.tileImages);
       this.map.setMapConfig(mapData);
+      this.map.followCameraForComponent(this.mainCharacter);
 
       [this.mainCharacter, ...this.characters].forEach((component) =>
-        this.map.registerComponent(component)
+        this.map.addComponent(component)
       );
     });
   }
