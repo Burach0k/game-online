@@ -1,25 +1,10 @@
-import { Component } from '../../utils/component';
-import { Screen } from '../../screen/screen';
+import { Component } from '../../../utils/component';
+import { Screen } from '../../../screen/screen';
 import { TextView } from './text-view';
 
 export class TextComponent extends Component {
   public isFocused: boolean = false;
 
-  get width() {
-    return this.view.width;
-  }
-
-  set width(width: number) {
-    this.view.width = width;
-  }
-
-  get height() {
-    return this.view.height;
-  }
-
-  set height(height: number) {
-    this.view.height = height;
-  }
 
   constructor(protected view: TextView, text: string) {
     super(view);

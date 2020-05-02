@@ -1,15 +1,11 @@
 import { Scene } from '../../utils/scene';
 import { Screen } from '../../screen/screen';
 import { menuConsts, sceneNames, keyCodes } from '../../consts';
-import { KeyboardEventManager } from '../../event-managers/keyboard-event-manager';
-import { MouseEventManager } from '../../event-managers/mouse-event-manager';
-import { TextComponent } from '../../components/text-component/text-component';
-import { TextView } from '../../components/text-component/text-view';
+import { TextComponent } from '../../components/ui/text-component/text-component';
+import { TextView } from '../../components/ui/text-component/text-view';
 import { Subscription } from '../../utils/event-manager';
 
 export class Menu extends Scene {
-  private keyboardEventManager = new KeyboardEventManager(this.screen);
-  private mouseEventManager = new MouseEventManager(this.screen);
   private callback: (scene: sceneNames) => void;
   private subscriptions: Subscription[] = [];
   private menuItems: TextComponent[] = [
@@ -20,6 +16,7 @@ export class Menu extends Scene {
 
   constructor(screen: Screen) {
     super(screen);
+    this.menuItems.forEach((item) => this.registerComponent(item));
   }
 
   async init(): Promise<any> {
@@ -32,17 +29,6 @@ export class Menu extends Scene {
     );
   }
 
-  getItemByCoordinate(x: number, y: number): TextComponent {
-    return this.menuItems.find((item) => {
-      return (
-        item.x - item.width / 2 <= x &&
-        item.x + item.width / 2 >= x &&
-        item.y - item.height <= y &&
-        item.y >= y
-      );
-    });
-  }
-
   render(): void {
     this.screen.renderBackground(menuConsts.backgraundColor);
     this.menuItems.forEach((item) => item.render(this.screen));
@@ -53,7 +39,10 @@ export class Menu extends Scene {
   }
 
   moveEvent(data: MouseEvent): void {
-    const selectItem = this.getItemByCoordinate(data.clientX, data.clientY);
+    const selectItem = this.getRegisterComponentsByCoordinate<TextComponent>(
+      data.clientX,
+      data.clientY
+    )[0];
 
     if (selectItem) {
       this.chooseMenuItem(selectItem);
@@ -61,7 +50,10 @@ export class Menu extends Scene {
   }
 
   clickEvent(data: MouseEvent): void {
-    const selectItem = this.getItemByCoordinate(data.clientX, data.clientY);
+    const selectItem = this.getRegisterComponentsByCoordinate<TextComponent>(
+      data.clientX,
+      data.clientY
+    )[0];
 
     if (selectItem) this.changeMenuStatus(data.type as keyCodes.Click);
   }

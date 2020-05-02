@@ -1,9 +1,9 @@
-import { Component } from '../../utils/component';
+import { Component } from '../../../utils/component';
 import { CharacterView } from './character-view';
-import { Screen } from '../../screen/screen';
-import { Direction } from '../../models/direction';
-import { ICoordinates } from '../../models/tile';
-import { screenTileSize } from '../../game-map/game-map.model';
+import { Screen } from '../../../screen/screen';
+import { Direction } from '../../../models/direction';
+import { ICoordinates } from '../../../models/tile';
+import { screenTileSize } from '../../../game-map/game-map.model';
 
 export class CharacterComponent extends Component {
   public speed: number = 4;

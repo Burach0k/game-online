@@ -1,8 +1,10 @@
+import { ICoordinates } from '../models/tile';
+
 export class Screen {
   public width: number;
   public height: number;
-  private startXCoordinate: number;
-  private startYCoordinate: number;
+  private startXCoordinate: number = 0;
+  private startYCoordinate: number = 0;
   private canvasElement: HTMLCanvasElement;
   private canvasContext: CanvasRenderingContext2D;
 
@@ -33,14 +35,35 @@ export class Screen {
     this.canvasContext.fillStyle = color;
   }
 
-  public renderBackground(backgraundColor: string): void {
+  public renderBackground(backgroundColor: string): void {
     this.canvasContext.clearRect(0, 0, this.width, this.height);
-    this.canvasContext.fillStyle = backgraundColor;
-    this.canvasContext.fillRect(0, 0, this.width, this.height);
+    this.renderRectangle(0, 0, this.width, this.height, backgroundColor);
+  }
+
+  public renderRectangle(
+    xCoordinate: number,
+    yCoordinate: number,
+    width: number,
+    height: number,
+    backgroundColor: string
+  ): void {
+    this.canvasContext.fillStyle = backgroundColor;
+    this.canvasContext.fillRect(xCoordinate, yCoordinate, width, height);
   }
 
   public renderText(text: string, xCoordinate: number, yCoordinate: number): void {
     this.canvasContext.fillText(text, xCoordinate, yCoordinate);
+  }
+
+  public strokeRect(
+    xCoordinate: number,
+    yCoordinate: number,
+    width: number,
+    height: number,
+    backgroundColor: string
+  ): void {
+    this.canvasContext.strokeStyle = backgroundColor;
+    this.canvasContext.strokeRect(xCoordinate, yCoordinate, width, height);
   }
 
   public addEventListener(eventName: string, callback: (data: any) => void): void {
@@ -54,6 +77,10 @@ export class Screen {
   public setBegginingOfCoordinates(xCoordinate: number, yCoordinate: number) {
     this.startXCoordinate = xCoordinate;
     this.startYCoordinate = yCoordinate;
+  }
+
+  public getBeginningOfCoordinates(): ICoordinates {
+    return { x: this.startXCoordinate, y: this.startYCoordinate };
   }
 
   public renderImg(
