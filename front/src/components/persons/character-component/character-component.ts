@@ -4,6 +4,7 @@ import { Screen } from '../../../screen/screen';
 import { Direction } from '../../../models/direction';
 import { ICoordinates } from '../../../models/tile';
 import { screenTileSize } from '../../../game-map/game-map.model';
+import { IRegisterComponent } from '../../../models/register-component';
 
 export class CharacterComponent extends Component {
   public speed: number = 4;
@@ -17,8 +18,8 @@ export class CharacterComponent extends Component {
     [Direction.Stop]: (x, y) => ({ x, y }),
   };
 
-  constructor(protected view: CharacterView) {
-    super(view);
+  constructor(protected view: CharacterView, registerComponentService: IRegisterComponent) {
+    super(view, registerComponentService);
     this.x = 500;
     this.y = 500;
     this.view.setDirection(this.direction);

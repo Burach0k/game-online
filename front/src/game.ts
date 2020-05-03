@@ -13,9 +13,9 @@ export class Game {
     if (this.isLoading) {
       this.screen.renderBackground('red');
     } else {
-      this.scene.render(this.screen);
+      this.scene.update(this.screen);
     }
-    requestAnimationFrame((time) => this.render(time));
+    requestAnimationFrame((time) => this.update(time));
   }
 
   public changeScene(sceneName: sceneNames): void {
@@ -35,11 +35,15 @@ export class Game {
 
   public start(): void {
     this.changeScene(sceneNames.Menu);
-    requestAnimationFrame((time) => this.render(time));
+    requestAnimationFrame((time) => this.update(time));
   }
 
   public init(): void {
     this.screen = new Screen();
     this.screen.init();
+  }
+
+  public update(time: number): void {
+    this.render(time);
   }
 }

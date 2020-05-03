@@ -28,7 +28,7 @@ export class HeroComponent extends CharacterComponent {
     }
 
     super.render(canvas);
-    this.backpack.render(canvas);
-    this.flashlight.render(canvas);
+    this.backpack.update(canvas);
+    this.flashlight.update(canvas);
   }
 }

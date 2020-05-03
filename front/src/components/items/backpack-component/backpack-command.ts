@@ -10,11 +10,5 @@ export class BackpackCommand extends Command {
     super();
   }
 
-  execute() {
-    if (this.isRegisterItem) {
-      this.scene.registerComponent(this.item);
-    } else {
-      this.scene.unregisterComponent(this.item);
-    }
-  }
+  execute() {}
 }

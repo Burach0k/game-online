@@ -8,40 +8,54 @@ import {
   HEIGHT_PER_BACKPACK_ITEM,
 } from './constants';
 import { BackpackCommand } from './backpack-command';
+import { BackpackItem } from './backpack-item-decoratotor';
+import { IRegisterComponent } from '../../../models/register-component';
 
 export class BackpackComponent extends Component {
   private command: BackpackCommand;
   private isActive: boolean = false;
-  private items: Component[] = [];
+  private items: BackpackItem[] = [];
   private itemsXCount: number = DEFAULT_BACKPACK_ITEM_COUNT_X;
   private itemsYCount: number = DEFAULT_BACKPACK_ITEM_COUNT_Y;
 
-  constructor(protected view: BackpackView) {
-    super(view);
+  constructor(protected view: BackpackView, registerComponentService: IRegisterComponent) {
+    super(view, registerComponentService);
     this.x = 0;
     this.y = 0;
+    this.registerComponentService.registerComponent(this);
   }
 
-  public onclick(): void {
+  public trigger(): void {
     this.isActive = !this.isActive;
-
-    this.items.forEach((item) => {
-      this.command.item = item;
-      this.command.isRegisterItem = this.isActive;
-      this.command.execute();
-    });
+    if (this.isActive) {
+      this.items.forEach((item) => this.registerComponentService.registerComponent(item));
+    } else {
+      this.items.forEach((item) => this.registerComponentService.unregisterComponent(item));
+    }
   }
 
   public addItemToBackpack(item: Component) {
-    this.items.push(item);
+    this.items.push(new BackpackItem(item, this.registerComponentService));
   }
 
-  public removeItemFromBackpack(item: Component) {
+  public removeItemFromBackpack(item: Component): void {
     this.items = this.items.filter((itemFromBackpack) => itemFromBackpack !== item);
+    this.registerComponentService.unregisterComponent(item);
+    this.command.execute();
   }
 
-  public setCommand(command: BackpackCommand) {
+  public setCommand(command: BackpackCommand): void {
     this.command = command;
+  }
+
+  public update(canvas: Screen): void {
+    this.items.forEach((item) => {
+      if (item.isItemSholdRemove) {
+        this.removeItemFromBackpack(item);
+      }
+    });
+
+    this.render(canvas);
   }
 
   public render(canvas: Screen): void {
@@ -78,7 +92,7 @@ export class BackpackComponent extends Component {
             item.y = beginningCoordinates.y + initialY + yIndex * HEIGHT_PER_BACKPACK_ITEM;
             item.width = WIDTH_PER_BACKPACK_ITEM;
             item.height = HEIGHT_PER_BACKPACK_ITEM;
-            item.render(canvas);
+            item.update(canvas);
           }
         }
       }

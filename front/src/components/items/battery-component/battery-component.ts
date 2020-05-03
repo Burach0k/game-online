@@ -2,12 +2,19 @@ import { Component } from '../../../utils/component';
 import { Screen } from '../../../screen/screen';
 import { BatteryCommand } from './battery-command';
 import { CHARGE_PER_USAGE } from './constant';
+import { IRegisterComponent } from 'src/models/register-component';
+import { BatteryView } from './battery-view';
 
 export class BatteryComponent extends Component {
   private charge: number = 100;
   private command: BatteryCommand;
 
-  public onclick(): void {
+  constructor(view: BatteryView, registerComponentService: IRegisterComponent) {
+    super(view, registerComponentService);
+    this.registerComponentService.registerComponent(this);
+  }
+
+  public trigger(): void {
     if (this.command && this.charge) {
       this.command.charge = CHARGE_PER_USAGE;
       this.charge -= CHARGE_PER_USAGE;
@@ -15,7 +22,7 @@ export class BatteryComponent extends Component {
     }
   }
 
-  public setCommand(command: BatteryCommand) {
+  public setCommand(command: BatteryCommand): void {
     this.command = command;
   }
 

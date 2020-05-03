@@ -18,6 +18,7 @@ import { flashlightView } from '../../components/items/flashlight-component/flas
 import { BatteryComponent } from '../../components/items/battery-component/battery-component';
 import { BatteryView } from '../../components/items/battery-component/battery-view';
 import { BatteryCommand } from '../../components/items/battery-component/battery-command';
+import { RegisterComponentService } from '../../services/action-component-service';
 
 export class Play extends Scene {
   private callback: (scene: sceneNames) => void;
@@ -27,28 +28,34 @@ export class Play extends Scene {
   private mainCharacter: CharacterComponent;
   private characters: CharacterComponent[] = [];
   private subscriptions: Subscription[] = [];
+  private registerComponentService = new RegisterComponentService(this.screen);
 
   constructor(screen: Screen) {
     super(screen);
-
-    this.subscriptions.push(
-      this.keyboardEventManager.subscribe('click', (event: MouseEvent) => {
-        this.getRegisterComponentsByCoordinate(event.clientX, event.clientY).forEach((component) =>
-          component.onclick()
-        );
-      })
-    );
   }
 
   public init(): Promise<any> {
     this.subscriptions.push(
-      this.keyboardEventManager.subscribe('keydown', (data: KeyboardEvent) => {
-        if (!data.repeat) {
-          this.setCharacterDirection(this.mainCharacter, data.keyCode);
+      this.keyboardEventManager.subscribe('keydown', (event: KeyboardEvent) => {
+        if (!event.repeat) {
+          this.setCharacterDirection(this.mainCharacter, event.keyCode);
         }
       }),
 
-      this.keyboardEventManager.subscribe('keyup', (data: KeyboardEvent) =>
+      this.keyboardEventManager.subscribe('click', (event: MouseEvent) => {
+        this.registerComponentService
+          .getRegisterComponentsByCoordinate(event.clientX, event.clientY)
+          .forEach((component) => component.trigger());
+      }),
+
+      this.keyboardEventManager.subscribe('contextmenu', (event: MouseEvent) => {
+        event.preventDefault();
+        this.registerComponentService
+          .getRegisterComponentsByCoordinate(event.clientX, event.clientY)
+          .forEach((component) => component.changeContextMenuStatus());
+      }),
+
+      this.keyboardEventManager.subscribe('keyup', (event: KeyboardEvent) =>
         this.stopCharacterMove(this.mainCharacter)
       )
     );
@@ -107,21 +114,32 @@ export class Play extends Scene {
     this.callback = callback;
   }
 
-  public render(): void {
+  public update(): void {
     this.characters.forEach((character) => {
       this.setCharacterRandomDirection(character);
     });
 
+    this.render();
+  }
+
+  public render(): void {
     this.map.render();
   }
 
   private initMainCharacter(width: number, height: number): HeroComponent {
     const mainCharacter = new HeroComponent(
-      new CharacterView(width, height, { x: 23, y: 0 }, this.tileImages)
+      new CharacterView(width, height, { x: 23, y: 0 }, this.tileImages),
+      this.registerComponentService
     );
-    const backPack = new BackpackComponent(new BackpackView(100, 100));
-    const flashlight = new FlashlightComponent(new flashlightView(50, 50));
-    const battery = new BatteryComponent(new BatteryView(100, 100));
+    const backPack = new BackpackComponent(
+      new BackpackView(100, 100),
+      this.registerComponentService
+    );
+    const flashlight = new FlashlightComponent(
+      new flashlightView(50, 50),
+      this.registerComponentService
+    );
+    const battery = new BatteryComponent(new BatteryView(100, 100), this.registerComponentService);
 
     battery.setCommand(new BatteryCommand(mainCharacter));
     backPack.setCommand(new BackpackCommand(this));
@@ -129,19 +147,15 @@ export class Play extends Scene {
     mainCharacter.takeBackpack(backPack);
     mainCharacter.takeFLashlight(flashlight);
 
-    this.registerComponent(mainCharacter);
-    this.registerComponent(backPack);
-    this.registerComponent(flashlight);
-
     return mainCharacter;
   }
 
   public initNPC(width: number, height: number): CharacterComponent {
     const npc = new CharacterComponent(
-      new CharacterView(width, height, { x: 23, y: 6 }, this.tileImages)
+      new CharacterView(width, height, { x: 23, y: 6 }, this.tileImages),
+      this.registerComponentService
     );
 
-    this.registerComponent(npc);
     return npc;
   }
 

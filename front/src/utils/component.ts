@@ -1,6 +1,6 @@
 import { Screen } from '../screen/screen';
 import { View } from './view';
-import { Scene } from './scene';
+import { IRegisterComponent } from '../models/register-component';
 
 export abstract class Component {
   public x: number;
@@ -22,11 +22,25 @@ export abstract class Component {
     this.view.height = height;
   }
 
-  constructor(protected view: View) {}
+  constructor(protected view: View, protected registerComponentService: IRegisterComponent) {}
+
+  public update(canvas: Screen) {
+    this.render(canvas);
+  }
 
   public render(canvas: Screen): void {
     this.view.render(canvas);
   }
 
-  public onclick(): void {}
+  public getView(): View {
+    return this.view;
+  }
+
+  public setView(newView: View): View {
+    return (this.view = newView);
+  }
+
+  public trigger(): void {}
+
+  public changeContextMenuStatus(): void {}
 }
