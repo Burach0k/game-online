@@ -1,5 +1,5 @@
 import { Command } from '../../../utils/command';
-import { HeroComponent } from 'src/components/persons/hero-component/hero-coponent';
+import { HeroComponent } from '../../../components/persons/hero-component/hero-coponent';
 
 export class BatteryCommand extends Command {
   public charge: number;

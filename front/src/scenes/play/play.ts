@@ -2,7 +2,6 @@ import io from 'socket.io-client';
 import { Screen } from '../../screen/screen';
 import { Scene } from '../../utils/scene';
 import { sceneNames, SEVER_DOMAIN, keyCodes } from '../../consts';
-import { KeyboardEventManager } from '../../event-managers/keyboard-event-manager';
 import { CharacterComponent } from '../../components/persons/character-component/character-component';
 import { CharacterView } from '../../components/persons/character-component/character-view';
 import { Direction } from '../../models/direction';
@@ -14,6 +13,11 @@ import { HeroComponent } from '../../components/persons/hero-component/hero-copo
 import { BackpackComponent } from '../../components/items/backpack-component/backpack-component';
 import { BackpackView } from '../../components/items/backpack-component/backpack-view';
 import { BackpackCommand } from '../../components/items/backpack-component/backpack-command';
+import { FlashlightComponent } from '../../components/items/flashlight-component/flashlight-componet';
+import { flashlightView } from '../../components/items/flashlight-component/flashlight-view';
+import { BatteryComponent } from '../../components/items/battery-component/battery-component';
+import { BatteryView } from '../../components/items/battery-component/battery-view';
+import { BatteryCommand } from '../../components/items/battery-component/battery-command';
 
 export class Play extends Scene {
   private callback: (scene: sceneNames) => void;
@@ -116,11 +120,18 @@ export class Play extends Scene {
       new CharacterView(width, height, { x: 23, y: 0 }, this.tileImages)
     );
     const backPack = new BackpackComponent(new BackpackView(100, 100));
+    const flashlight = new FlashlightComponent(new flashlightView(50, 50));
+    const battery = new BatteryComponent(new BatteryView(100, 100));
+
+    battery.setCommand(new BatteryCommand(mainCharacter));
     backPack.setCommand(new BackpackCommand(this));
+    backPack.addItemToBackpack(battery);
     mainCharacter.takeBackpack(backPack);
+    mainCharacter.takeFLashlight(flashlight);
 
     this.registerComponent(mainCharacter);
     this.registerComponent(backPack);
+    this.registerComponent(flashlight);
 
     return mainCharacter;
   }

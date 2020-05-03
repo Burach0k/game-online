@@ -7,14 +7,12 @@ import {
   DEFAULT_BACKPACK_ITEM_COUNT_Y,
   HEIGHT_PER_BACKPACK_ITEM,
 } from './constants';
-import { BatteryComponent } from '../battery-component/battery-component';
-import { BatteryView } from '../battery-component/battery-view';
 import { BackpackCommand } from './backpack-command';
 
 export class BackpackComponent extends Component {
   private command: BackpackCommand;
-  private isShown: boolean = false;
-  private items: Component[] = [new BatteryComponent(new BatteryView(100, 100))];
+  private isActive: boolean = false;
+  private items: Component[] = [];
   private itemsXCount: number = DEFAULT_BACKPACK_ITEM_COUNT_X;
   private itemsYCount: number = DEFAULT_BACKPACK_ITEM_COUNT_Y;
 
@@ -25,11 +23,11 @@ export class BackpackComponent extends Component {
   }
 
   public onclick(): void {
-    this.isShown = !this.isShown;
+    this.isActive = !this.isActive;
 
     this.items.forEach((item) => {
       this.command.item = item;
-      this.command.isRegisterItem = this.isShown;
+      this.command.isRegisterItem = this.isActive;
       this.command.execute();
     });
   }
@@ -52,7 +50,7 @@ export class BackpackComponent extends Component {
     this.y = beginningCoordinates.y;
 
     this.view.render(canvas, this.x, this.y);
-    if (this.isShown) {
+    if (this.isActive) {
       const beginningCoordinates = canvas.getBeginningOfCoordinates();
       const initialX: number = (canvas.width - this.itemsXCount * WIDTH_PER_BACKPACK_ITEM) / 2;
       const initialY: number = (canvas.height - this.itemsYCount * HEIGHT_PER_BACKPACK_ITEM) / 2;
