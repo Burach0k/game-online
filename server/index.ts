@@ -1,4 +1,5 @@
 import { MapGenerator } from './tiles/map-generator/map-generator';
+import { mapObjectInformation } from './tiles/models';
 
 const app = require('express')();
 const server = require('http').Server(app);
@@ -16,9 +17,22 @@ app.get('/source_map', (req, res) => {
 
 const gameCoordinator = io.on('connection', (socket) => {
     gameSocket = socket;
-    const mapGenerator = new MapGenerator(100, 100);
 
-    gameSocket.emit('data', mapGenerator.generateMap());
+    const mapGenerator = new MapGenerator(100, 100);
+    mapGenerator
+        .addMapObject(mapObjectInformation.tree, 20)
+        .addMapObject(mapObjectInformation.forest, 10)
+        .addMapObject(mapObjectInformation.river, 2);
+
+    mapGenerator.concatGeneratedObject();
+    mapGenerator.amputateGeneratedObject();
+
+    mapGenerator.createObjectOutline();
+
+    mapGenerator.includeInMap();
+
+    gameSocket.emit('data', mapGenerator.getMap());
 });
 
 server.listen(PORT);
+ 

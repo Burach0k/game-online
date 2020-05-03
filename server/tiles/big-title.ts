@@ -1,60 +1,9 @@
-import { tilePart, forestOutline } from './models';
+import { tilePart } from './models';
 import { getRandomNumber } from '../helpers/randomizer';
 import { figures } from './random-figures';
 
 export class BigTitle {
     constructor(protected width: number, protected height: number, protected tilePack: any) {}
-
-    getElementsPosition(array: Array<Array<tilePart | null>>): forestOutline {
-        const outline: forestOutline = {
-            top: [],
-            left: [],
-            right: [],
-            bottom: [],
-        };
-
-        for (let j = 0; j < array[0].length; j++) {
-            for (let i = 0; i < array.length; i++) {
-                const position = { tileX: i, tileY: j };
-
-                if (array[i][j]) {
-                    if (i > 0) {
-                        if (array[i - 1][j] === null) outline.top.push(position);
-                    } else {
-                        outline.top.push(position);
-                    }
-
-                    if (i < array.length - 1) {
-                        if (array[i + 1][j] === null) outline.bottom.push(position);
-                    } else {
-                        outline.bottom.push(position);
-                    }
-                }
-            }
-        }
-
-        array.forEach((line, i) => {
-            line.forEach((cell, j) => {
-                const position = { tileX: i, tileY: j };
-
-                if (cell) {
-                    if (j > 0) {
-                        if (array[i][j - 1] === null) outline.left.push(position);
-                    } else {
-                        outline.left.push(position);
-                    }
-
-                    if (j < line.length - 1) {
-                        if (array[i][j + 1] === null) outline.right.push(position);
-                    } else {
-                        outline.right.push(position);
-                    }
-                }
-            });
-        });
-
-        return outline;
-    }
 
     getRandomFigure(width: number, height: number): Array<Array<tilePart | null>> {
         const key = Object.keys(figures)[getRandomNumber(0, Object.keys(figures).length - 1)];
@@ -110,25 +59,5 @@ export class BigTitle {
         });
 
         return reversedArray;
-    }
-
-    createOutline(mapTitles: Array<Array<tilePart>>) {
-        const outlineInfo: forestOutline = this.getElementsPosition(mapTitles);
-
-        outlineInfo.top.forEach((cell) => {
-            mapTitles[cell.tileX][cell.tileY] = this.tilePack.PART_2;
-        });
-
-        outlineInfo.bottom.forEach((cell) => {
-            mapTitles[cell.tileX][cell.tileY] = this.tilePack.PART_8;
-        });
-
-        outlineInfo.left.forEach((cell) => {
-            mapTitles[cell.tileX][cell.tileY] = this.tilePack.PART_4;
-        });
-
-        outlineInfo.right.forEach((cell) => {
-            mapTitles[cell.tileX][cell.tileY] = this.tilePack.PART_6;
-        });
     }
 }
