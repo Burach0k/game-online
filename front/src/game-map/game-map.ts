@@ -7,7 +7,7 @@ import {
 } from './game-map.model';
 import { Screen } from '../screen/screen';
 import { ICoordinates } from '../models/tile';
-import { CharacterComponent } from '../components/character-component/character-component';
+import { CharacterComponent } from '../components/persons/character-component/character-component';
 import { Camera } from '../camera/camera';
 import { Component } from '../utils/component';
 
@@ -24,7 +24,7 @@ export class gameMap {
     this.mapConfig = config;
   }
 
-  public addComponent(component: CharacterComponent) {
+  public addComponentToMap(component: CharacterComponent) {
     this.components.push(component);
   }
 
@@ -47,7 +47,7 @@ export class gameMap {
 
     //after we render character components with new coordinates
     this.components.forEach((component) => {
-      component.render(this.screen);
+      component.update(this.screen);
     });
   }
 
@@ -68,13 +68,13 @@ export class gameMap {
             );
 
             components.forEach((component) => {
-              let xDifference = this.getWayDifferenceToTile(
+              let xDifference = this.getInvisiblePartOfTile(
                 xTileIndex * screenTileSize,
                 component.x,
                 component.radius
               );
 
-              let yDifference = this.getWayDifferenceToTile(
+              let yDifference = this.getInvisiblePartOfTile(
                 yTileIndex * screenTileSize,
                 component.y,
                 component.radius
@@ -149,7 +149,7 @@ export class gameMap {
     return !overflowTiles.some((tile) => tile.isBarrier);
   }
 
-  private getWayDifferenceToTile(
+  private getInvisiblePartOfTile(
     tileCoordinate: number,
     componentCoordinate: number,
     componentRadius: number

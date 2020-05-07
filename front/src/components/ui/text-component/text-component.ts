@@ -1,28 +1,19 @@
-import { Component } from '../../utils/component';
-import { Screen } from '../../screen/screen';
+import { Component } from '../../../utils/component';
+import { Screen } from '../../../screen/screen';
 import { TextView } from './text-view';
+import { IRegisterComponent } from '../../../models/register-component';
 
 export class TextComponent extends Component {
   public isFocused: boolean = false;
+  public triggerCallback: Function;
 
-  get width() {
-    return this.view.width;
-  }
-
-  set width(width: number) {
-    this.view.width = width;
-  }
-
-  get height() {
-    return this.view.height;
-  }
-
-  set height(height: number) {
-    this.view.height = height;
-  }
-
-  constructor(protected view: TextView, text: string) {
-    super(view);
+  constructor(
+    protected view: TextView,
+    registerComponentService: IRegisterComponent,
+    text: string
+  ) {
+    super(view, registerComponentService);
+    this.registerComponentService.registerComponent(this);
     this.view.text = text;
   }
 
@@ -50,7 +41,18 @@ export class TextComponent extends Component {
   public setTextAlign(textAlign: CanvasTextAlign) {
     this.view.textAlign = textAlign;
   }
+
   public render(screen: Screen): void {
     this.view.render(screen, this.x, this.y);
+  }
+
+  public setOnTriggerAction(callback: Function) {
+    this.triggerCallback = callback;
+  }
+
+  public trigger() {
+    if (this.triggerCallback) {
+      this.triggerCallback();
+    }
   }
 }

@@ -1,28 +1,27 @@
 import { Scene } from '../../utils/scene';
 import { Screen } from '../../screen/screen';
 import { menuConsts, sceneNames, keyCodes } from '../../consts';
-import { KeyboardEventManager } from '../../event-managers/keyboard-event-manager';
-import { MouseEventManager } from '../../event-managers/mouse-event-manager';
-import { TextComponent } from '../../components/text-component/text-component';
-import { TextView } from '../../components/text-component/text-view';
+import { TextComponent } from '../../components/ui/text-component/text-component';
+import { TextView } from '../../components/ui/text-component/text-view';
 import { Subscription } from '../../utils/event-manager';
+import { RegisterComponentService } from '../../services/action-component-service';
 
 export class Menu extends Scene {
-  private keyboardEventManager = new KeyboardEventManager(this.screen);
-  private mouseEventManager = new MouseEventManager(this.screen);
   private callback: (scene: sceneNames) => void;
   private subscriptions: Subscription[] = [];
+  private registerComponentService = new RegisterComponentService(this.screen);
+
   private menuItems: TextComponent[] = [
-    new TextComponent(new TextView(30, 140), 'New game'),
-    new TextComponent(new TextView(30, 120), 'Continue'),
-    new TextComponent(new TextView(30, 60), 'Exit'),
+    new TextComponent(new TextView(30, 140), this.registerComponentService, 'New game'),
+    new TextComponent(new TextView(30, 120), this.registerComponentService, 'Continue'),
+    new TextComponent(new TextView(30, 60), this.registerComponentService, 'Exit'),
   ];
 
   constructor(screen: Screen) {
     super(screen);
   }
 
-  async init(): Promise<any> {
+  init(): Promise<any> {
     this.calculateelementPosition();
 
     this.subscriptions.push(
@@ -30,22 +29,17 @@ export class Menu extends Scene {
       this.mouseEventManager.subscribe('click', (data: MouseEvent) => this.clickEvent(data)),
       this.mouseEventManager.subscribe('mousemove', (data) => this.moveEvent(data))
     );
+
+    return Promise.resolve();
   }
 
-  getItemByCoordinate(x: number, y: number): TextComponent {
-    return this.menuItems.find((item) => {
-      return (
-        item.x - item.width / 2 <= x &&
-        item.x + item.width / 2 >= x &&
-        item.y - item.height <= y &&
-        item.y >= y
-      );
-    });
+  update(): void {
+    this.render();
   }
 
   render(): void {
     this.screen.renderBackground(menuConsts.backgraundColor);
-    this.menuItems.forEach((item) => item.render(this.screen));
+    this.menuItems.forEach((item) => item.update(this.screen));
   }
 
   destroy(): void {
@@ -53,7 +47,9 @@ export class Menu extends Scene {
   }
 
   moveEvent(data: MouseEvent): void {
-    const selectItem = this.getItemByCoordinate(data.clientX, data.clientY);
+    const selectItem = this.registerComponentService.getRegisterComponentsByCoordinate<
+      TextComponent
+    >(data.clientX, data.clientY)[0];
 
     if (selectItem) {
       this.chooseMenuItem(selectItem);
@@ -61,7 +57,9 @@ export class Menu extends Scene {
   }
 
   clickEvent(data: MouseEvent): void {
-    const selectItem = this.getItemByCoordinate(data.clientX, data.clientY);
+    const selectItem = this.registerComponentService.getRegisterComponentsByCoordinate<
+      TextComponent
+    >(data.clientX, data.clientY)[0];
 
     if (selectItem) this.changeMenuStatus(data.type as keyCodes.Click);
   }
@@ -84,7 +82,7 @@ export class Menu extends Scene {
   }
 
   nextElement(): void {
-    const selectedItemIndex = this.menuItems.findIndex((item) => item.isFocused);
+    const selectedItemIndex = this.menuItems.findIndex((item) => item);
     const isLastElement = selectedItemIndex === this.menuItems.length - 1;
     const newSelectedItemIndex = isLastElement ? menuConsts.firstElement : selectedItemIndex + 1;
 

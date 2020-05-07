@@ -1,15 +1,19 @@
 import { Screen } from '../screen/screen';
 import { sceneNames } from '../consts';
+import { MouseEventManager } from '../event-managers/mouse-event-manager';
+import { KeyboardEventManager } from '../event-managers/keyboard-event-manager';
 
 export abstract class Scene {
-  public screen: Screen;
-  private components: { render(canvas: Screen): void }[] = [];
+  protected keyboardEventManager = new KeyboardEventManager(this.screen);
+  protected mouseEventManager = new MouseEventManager(this.screen);
 
-  constructor(screen: Screen) {
+  constructor(public screen: Screen) {
     this.screen = screen;
   }
 
   abstract init(): Promise<any>;
+
+  abstract update(canvas: Screen): void;
 
   abstract render(canvas: Screen): void;
 

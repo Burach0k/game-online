@@ -1,0 +1,14 @@
+import { Command } from '../../../utils/command';
+import { Component } from '../../../utils/component';
+import { Scene } from '../../../utils/scene';
+
+export class BackpackCommand extends Command {
+  public isRegisterItem: boolean;
+  public item: Component;
+
+  constructor(private scene: Scene) {
+    super();
+  }
+
+  execute() {}
+}

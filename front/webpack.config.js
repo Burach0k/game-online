@@ -26,22 +26,12 @@ module.exports = {
         loaders: ['style-loader', 'css-loader'],
       },
       {
-        test: /\.eot$|\.jpe?g$|\.gif$|\.png$|\.svg$|\.woff$|\.ttf$|\.wav$|\.mp3$/,
+        test: /\.(png|jpg|gif)$/i,
         use: [
           {
-            loader: 'file-loader',
+            loader: 'url-loader',
             options: {
-              regExp: /(\\src\\)(\S+)(\\\S+\.\S+)/,
-              name: '[2]/[name].[ext]',
-            },
-          },
-          {
-            loader: 'image-webpack-loader',
-            options: {
-              regExp: /(\\src\\)(\S+)(\\\S+\.\S+)/,
-              name: '[2]/[name].[ext]',
-              bypassOnDebug: true,
-              disable: true,
+              limit: 8192,
             },
           },
         ],

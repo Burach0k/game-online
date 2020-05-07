@@ -1,5 +1,5 @@
-import { View } from '../../utils/view';
-import { Screen } from '../../screen/screen';
+import { View } from '../../../utils/view';
+import { Screen } from '../../../screen/screen';
 
 export class TextView extends View {
   public fontSize: number;

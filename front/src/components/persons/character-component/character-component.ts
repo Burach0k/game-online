@@ -1,14 +1,15 @@
-import { Component } from '../../utils/component';
+import { Component } from '../../../utils/component';
 import { CharacterView } from './character-view';
-import { Screen } from '../../screen/screen';
-import { Direction } from '../../models/direction';
-import { ICoordinates } from '../../models/tile';
-import { screenTileSize } from '../../game-map/game-map.model';
+import { Screen } from '../../../screen/screen';
+import { Direction } from '../../../models/direction';
+import { ICoordinates } from '../../../models/tile';
+import { screenTileSize } from '../../../game-map/game-map.model';
+import { IRegisterComponent } from '../../../models/register-component';
 
 export class CharacterComponent extends Component {
   public speed: number = 4;
   public direction: Direction = Direction.Stop;
-  public radius: number = 70;
+  public radius: number = 0;
   private nextPositionCalculator: { [key in Direction]: (x: number, y: number) => ICoordinates } = {
     [Direction.Right]: (x, y) => ({ x: x + this.speed, y }),
     [Direction.Left]: (x, y) => ({ x: x - this.speed, y }),
@@ -17,8 +18,8 @@ export class CharacterComponent extends Component {
     [Direction.Stop]: (x, y) => ({ x, y }),
   };
 
-  constructor(protected view: CharacterView) {
-    super(view);
+  constructor(protected view: CharacterView, registerComponentService: IRegisterComponent) {
+    super(view, registerComponentService);
     this.x = 500;
     this.y = 500;
     this.view.setDirection(this.direction);
@@ -48,6 +49,10 @@ export class CharacterComponent extends Component {
   }
 
   public isCharecterSeeArea(xCoordinate: number, yCoordinate: number): boolean {
+    if (this.radius === 0) {
+      return false;
+    }
+
     return (
       ((xCoordinate >= this.x + screenTileSize / 2 - this.radius &&
         xCoordinate < this.x + screenTileSize / 2 + this.radius) ||
