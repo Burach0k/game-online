@@ -19,6 +19,10 @@ export class RegisterComponentService implements IRegisterComponent {
     );
   }
 
+  public getRegisteredComponents<T extends Component>() {
+    return this.registeredComponents as T[];
+  }
+
   public getRegisterComponentsByCoordinate<T extends Component>(
     xCoordinate: number,
     yCoordinate: number

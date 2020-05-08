@@ -7,7 +7,7 @@ export class TextView extends View {
   public color: string;
   public text: string;
 
-  constructor(height: number, width: number) {
+  constructor(width: number, height: number) {
     super(height, width);
   }
 

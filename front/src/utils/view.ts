@@ -8,3 +8,11 @@ export abstract class View {
 
   abstract render(canvas: Screen, ...args: any[]): void;
 }
+
+export abstract class ItemView extends View {
+  protected image: HTMLImageElement = new Image();
+
+  public getImage(): HTMLImageElement {
+    return this.image;
+  }
+}

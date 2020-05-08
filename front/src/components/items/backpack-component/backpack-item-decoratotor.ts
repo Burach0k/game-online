@@ -1,28 +1,36 @@
-import { Component } from '../../../utils/component';
+import { ItemComponent } from '../../../utils/component';
 import { Screen } from '../../../screen/screen';
 import { IRegisterComponent } from '../../../models/register-component';
 import { TextComponent } from '../../../components/ui/text-component/text-component';
 import { TextView } from '../../../components/ui/text-component/text-view';
 
-export class BackpackItem extends Component {
-  private isContextMenuShown: boolean = false;
+export class BackpackItem extends ItemComponent {
   public isItemSholdRemove: boolean = false;
-  public contextMenuText: TextComponent;
 
-  constructor(private decoratedComponent: Component, registerComponentService: IRegisterComponent) {
+  private descriptionTextComponent: TextComponent = new TextComponent(
+    new TextView(250, 20),
+    this.registerComponentService,
+    ''
+  );
+  private removeTextComponent: TextComponent = new TextComponent(
+    new TextView(250, 20),
+    this.registerComponentService,
+    'remove item'
+  );
+
+  constructor(
+    private decoratedComponent: ItemComponent,
+    registerComponentService: IRegisterComponent
+  ) {
     super(decoratedComponent.getView(), registerComponentService);
-    this.contextMenuText = new TextComponent(
-      new TextView(50, 50),
-      this.registerComponentService,
-      'remove Item'
-    );
-    this.contextMenuText.setFontSize(20);
-    this.contextMenuText.setOnTriggerAction(() => {
-      this.isItemSholdRemove = true;
-      this.isContextMenuShown = false;
-      this.registerComponentService.unregisterComponent(this.contextMenuText);
-    });
+
+    this.registerComponentService.unregisterComponent(decoratedComponent);
+
+    this.removeTextComponent.setOnTriggerAction(() => this.markForRemoveItemFromBackpack());
+    this.removeTextComponent.setStyle(16, 'left', 'red');
+    this.descriptionTextComponent.setStyle(16, 'left', 'white');
   }
+  Command;
 
   public get x() {
     return this.decoratedComponent.x;
@@ -40,24 +48,43 @@ export class BackpackItem extends Component {
     this.decoratedComponent.y = value;
   }
 
+  public update(canvas: Screen) {
+    if (this.issInfoShown) {
+      this.registerComponentService.registerComponent(this.removeTextComponent);
+      this.descriptionTextComponent.setText(this.getDescription());
+    } else {
+      this.registerComponentService.unregisterComponent(this.removeTextComponent);
+    }
+
+    this.render(canvas);
+  }
+
   public render(canvas: Screen): void {
     this.decoratedComponent.update(canvas);
 
-    if (this.isContextMenuShown) {
+    if (this.issInfoShown) {
       const beginningCoordinates = canvas.getBeginningOfCoordinates();
-      this.contextMenuText.x = this.decoratedComponent.x - beginningCoordinates.x + 50;
-
-      this.contextMenuText.y = this.decoratedComponent.y - beginningCoordinates.y + 20;
 
       canvas.renderRectangle(
         this.decoratedComponent.x - beginningCoordinates.x + 50,
         this.decoratedComponent.y - beginningCoordinates.y,
-        100,
-        50,
+        300,
+        75,
         'black'
       );
 
-      this.contextMenuText.update(canvas);
+      this.descriptionTextComponent.x = this.decoratedComponent.x - beginningCoordinates.x + 50;
+      this.descriptionTextComponent.y = this.decoratedComponent.y - beginningCoordinates.y + 20;
+
+      this.removeTextComponent.x = this.decoratedComponent.x - beginningCoordinates.x + 50;
+      this.removeTextComponent.y =
+        this.decoratedComponent.y -
+        beginningCoordinates.y +
+        20 +
+        this.descriptionTextComponent.height;
+
+      this.descriptionTextComponent.update(canvas);
+      this.removeTextComponent.update(canvas);
     }
   }
 
@@ -65,8 +92,16 @@ export class BackpackItem extends Component {
     this.decoratedComponent.trigger();
   }
 
-  public changeContextMenuStatus(): void {
-    this.isContextMenuShown = !this.isContextMenuShown;
-    //we override this method of decoratedComponent
+  public markForRemoveItemFromBackpack(): void {
+    this.isItemSholdRemove = true;
+    this.hideInfo();
+  }
+
+  public getDescription(): string {
+    return this.decoratedComponent.getDescription();
+  }
+
+  public getDecoratedComponent(): ItemComponent {
+    return this.decoratedComponent;
   }
 }

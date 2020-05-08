@@ -12,9 +12,9 @@ export class Menu extends Scene {
   private registerComponentService = new RegisterComponentService(this.screen);
 
   private menuItems: TextComponent[] = [
-    new TextComponent(new TextView(30, 140), this.registerComponentService, 'New game'),
-    new TextComponent(new TextView(30, 120), this.registerComponentService, 'Continue'),
-    new TextComponent(new TextView(30, 60), this.registerComponentService, 'Exit'),
+    new TextComponent(new TextView(140, 30), this.registerComponentService, 'New game'),
+    new TextComponent(new TextView(140, 30), this.registerComponentService, 'Continue'),
+    new TextComponent(new TextView(140, 30), this.registerComponentService, 'Exit'),
   ];
 
   constructor(screen: Screen) {

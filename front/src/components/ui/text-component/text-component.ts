@@ -1,12 +1,9 @@
-import { Component } from '../../../utils/component';
+import { UIComponent } from '../../../utils/component';
 import { Screen } from '../../../screen/screen';
 import { TextView } from './text-view';
 import { IRegisterComponent } from '../../../models/register-component';
 
-export class TextComponent extends Component {
-  public isFocused: boolean = false;
-  public triggerCallback: Function;
-
+export class TextComponent extends UIComponent {
   constructor(
     protected view: TextView,
     registerComponentService: IRegisterComponent,
@@ -42,17 +39,7 @@ export class TextComponent extends Component {
     this.view.textAlign = textAlign;
   }
 
-  public render(screen: Screen): void {
-    this.view.render(screen, this.x, this.y);
-  }
-
-  public setOnTriggerAction(callback: Function) {
-    this.triggerCallback = callback;
-  }
-
-  public trigger() {
-    if (this.triggerCallback) {
-      this.triggerCallback();
-    }
+  public render(canvas: Screen): void {
+    this.view.render(canvas, this.x, this.y);
   }
 }

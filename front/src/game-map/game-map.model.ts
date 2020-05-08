@@ -1,3 +1,5 @@
+import { ItemComponent } from '../utils/component';
+
 interface ITileConfig {
   isBarrier: boolean;
   tileX: number;
@@ -6,6 +8,7 @@ interface ITileConfig {
 
 export interface IMapConfig {
   land: ITileConfig[][];
+  items: ItemComponent[];
   tileSize: number;
 }
 
