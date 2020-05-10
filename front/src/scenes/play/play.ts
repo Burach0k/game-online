@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 import { Screen } from '../../screen/screen';
-import { Scene } from '../../utils/scene';
+import { Scene, PlayScene } from '../../utils/scene';
 import { sceneNames, SEVER_DOMAIN, keyCodes } from '../../consts';
 import { CharacterComponent } from '../../components/persons/character-component/character-component';
 import { CharacterView } from '../../components/persons/character-component/character-view';
@@ -19,12 +19,12 @@ import { BatteryComponent } from '../../components/items/battery-component/batte
 import { BatteryView } from '../../components/items/battery-component/battery-view';
 import { BatteryCommand } from '../../components/items/battery-component/battery-command';
 import { RegisterComponentService } from '../../services/action-component-service';
+import { ItemComponent } from '../../utils/component';
 
-export class Play extends Scene {
+export class Play extends PlayScene {
   private callback: (scene: sceneNames) => void;
   private tileImages: HTMLImageElement = new Image();
   private gameSocket;
-  private map: gameMap;
   private mainCharacter: CharacterComponent;
   private characters: CharacterComponent[] = [];
   private subscriptions: Subscription[] = [];
@@ -46,13 +46,17 @@ export class Play extends Scene {
         this.registerComponentService
           .getRegisterComponentsByCoordinate(event.clientX, event.clientY)
           .forEach((component) => component.trigger());
+
+        this.registerComponentService
+          .getRegisteredComponents()
+          .forEach((component) => component.hideInfo());
       }),
 
       this.keyboardEventManager.subscribe('contextmenu', (event: MouseEvent) => {
         event.preventDefault();
         this.registerComponentService
           .getRegisterComponentsByCoordinate(event.clientX, event.clientY)
-          .forEach((component) => component.changeContextMenuStatus());
+          .forEach((component) => component.showInfo());
       }),
 
       this.keyboardEventManager.subscribe('keyup', (event: KeyboardEvent) =>
@@ -65,11 +69,11 @@ export class Play extends Scene {
       this.characters.push(this.initNPC(mapData.tileSize, mapData.tileSize));
 
       this.map = new gameMap(this.screen, this.tileImages);
-      this.map.setMapConfig(mapData);
+      this.map.setMapConfig({ ...mapData, items: [] });
       this.map.followCameraForComponent(this.mainCharacter);
 
       [...this.characters, this.mainCharacter].forEach((component) => {
-        this.map.addComponentToMap(component);
+        this.addCharacterToMap(component);
       });
 
       this.debuggingMethod();
@@ -100,6 +104,10 @@ export class Play extends Scene {
       });
 
     return Promise.all([dataPrimse, mapPomise]);
+  }
+
+  public addItemToMap(item: ItemComponent): void {
+    this.map.addItemToMap(item);
   }
 
   public checkEvent(key: number): void {

@@ -1,4 +1,4 @@
-import { Component } from '../../../utils/component';
+import { Component, ItemComponent } from '../../../utils/component';
 import { BackpackView } from './backpack-view';
 import { Screen } from '../../../screen/screen';
 import {
@@ -11,8 +11,9 @@ import { BackpackCommand } from './backpack-command';
 import { BackpackItem } from './backpack-item-decoratotor';
 import { IRegisterComponent } from '../../../models/register-component';
 
-export class BackpackComponent extends Component {
-  private command: BackpackCommand;
+export class BackpackComponent extends ItemComponent {
+  protected command: BackpackCommand;
+
   private isActive: boolean = false;
   private items: BackpackItem[] = [];
   private itemsXCount: number = DEFAULT_BACKPACK_ITEM_COUNT_X;
@@ -34,24 +35,21 @@ export class BackpackComponent extends Component {
     }
   }
 
-  public addItemToBackpack(item: Component) {
+  public addItemToBackpack(item: ItemComponent) {
     this.items.push(new BackpackItem(item, this.registerComponentService));
   }
 
   public removeItemFromBackpack(item: Component): void {
     this.items = this.items.filter((itemFromBackpack) => itemFromBackpack !== item);
     this.registerComponentService.unregisterComponent(item);
-    this.command.execute();
-  }
-
-  public setCommand(command: BackpackCommand): void {
-    this.command = command;
   }
 
   public update(canvas: Screen): void {
     this.items.forEach((item) => {
       if (item.isItemSholdRemove) {
         this.removeItemFromBackpack(item);
+        this.command.item = item.getDecoratedComponent();
+        this.command.execute();
       }
     });
 

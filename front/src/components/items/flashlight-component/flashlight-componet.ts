@@ -1,9 +1,9 @@
-import { Component } from '../../../utils/component';
+import { Component, ItemComponent } from '../../../utils/component';
 import { Screen } from '../../../screen/screen';
 import { flashlightView } from './flashlight-view';
 import { IRegisterComponent } from '../../../models/register-component';
 
-export class FlashlightComponent extends Component {
+export class FlashlightComponent extends ItemComponent {
   public charge: number = 100;
   public isActive: boolean = false;
 

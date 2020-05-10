@@ -9,11 +9,11 @@ import { Screen } from '../screen/screen';
 import { ICoordinates } from '../models/tile';
 import { CharacterComponent } from '../components/persons/character-component/character-component';
 import { Camera } from '../camera/camera';
-import { Component } from '../utils/component';
+import { Component, ItemComponent } from '../utils/component';
 
 export class gameMap {
   private mapConfig: IMapConfig;
-  private components: CharacterComponent[] = [];
+  private characterComponents: CharacterComponent[] = [];
   private mapCamera: Camera = new Camera(this.screen.width, this.screen.height);
   private dayPeriod: DayPeriods = DayPeriods.Day;
   private backgroudColor: ColorOfDayPeriods = ColorOfDayPeriods.Day;
@@ -24,8 +24,20 @@ export class gameMap {
     this.mapConfig = config;
   }
 
-  public addComponentToMap(component: CharacterComponent) {
-    this.components.push(component);
+  public addCharacterToMap(component: CharacterComponent) {
+    this.characterComponents.push(component);
+  }
+
+  public removeCharacterFromMap(component: CharacterComponent) {
+    this.characterComponents = this.characterComponents.filter((item) => item !== component);
+  }
+
+  public addItemToMap(component: ItemComponent) {
+    this.mapConfig.items.push(component);
+  }
+
+  public removeItemFromMap(component: ItemComponent) {
+    this.mapConfig.items = this.mapConfig.items.filter((item) => item !== component);
   }
 
   public followCameraForComponent(component: Component) {
@@ -36,7 +48,7 @@ export class gameMap {
     this.screen.renderBackground(this.backgroudColor);
 
     //need to calculate next position for all characters
-    this.components.forEach((component) => {
+    this.characterComponents.forEach((component) => {
       this.checkCharacterPositionAndMove(component);
     });
 
@@ -46,7 +58,7 @@ export class gameMap {
     this.renderMap();
 
     //after we render character components with new coordinates
-    this.components.forEach((component) => {
+    this.characterComponents.forEach((component) => {
       component.update(this.screen);
     });
   }
@@ -58,67 +70,34 @@ export class gameMap {
 
   private renderMap(): void {
     this.mapConfig.land.forEach((tiles, yTileIndex) => {
-      tiles.forEach((tile, xTileIndex) => {
-        if (
-          this.mapCamera.isCameraShownArea(xTileIndex * screenTileSize, yTileIndex * screenTileSize)
-        ) {
-          if (this.dayPeriod === DayPeriods.Night) {
-            const components = this.components.filter((component) =>
-              component.isCharecterSeeArea(xTileIndex * screenTileSize, yTileIndex * screenTileSize)
-            );
+      tiles.forEach((tile, xTileIndex) =>
+        this.drawTile(
+          this.tilesImage,
+          xTileIndex * screenTileSize,
+          yTileIndex * screenTileSize,
+          tile.tileX * this.mapConfig.tileSize,
+          tile.tileY * this.mapConfig.tileSize,
+          this.mapConfig.tileSize,
+          this.mapConfig.tileSize,
+          screenTileSize,
+          screenTileSize
+        )
+      );
+    });
 
-            components.forEach((component) => {
-              let xDifference = this.getInvisiblePartOfTile(
-                xTileIndex * screenTileSize,
-                component.x,
-                component.radius
-              );
-
-              let yDifference = this.getInvisiblePartOfTile(
-                yTileIndex * screenTileSize,
-                component.y,
-                component.radius
-              );
-
-              this.screen.renderImg(
-                this.tilesImage,
-                //TODO: make this calculation in backend
-                tile.tileX * this.mapConfig.tileSize -
-                  (Math.min(0, xDifference) / screenTileSize) * this.mapConfig.tileSize,
-
-                tile.tileY * this.mapConfig.tileSize -
-                  (Math.min(0, yDifference) / screenTileSize) * this.mapConfig.tileSize,
-
-                this.mapConfig.tileSize -
-                  (Math.abs(xDifference) / screenTileSize) * this.mapConfig.tileSize,
-
-                this.mapConfig.tileSize -
-                  (Math.abs(yDifference) / screenTileSize) * this.mapConfig.tileSize,
-
-                xTileIndex * screenTileSize - Math.min(0, xDifference),
-
-                yTileIndex * screenTileSize - Math.min(0, yDifference),
-
-                screenTileSize - Math.abs(xDifference),
-                screenTileSize - Math.abs(yDifference)
-              );
-            });
-          } else {
-            this.screen.renderImg(
-              this.tilesImage,
-              //TODO: make this calculation in backend
-              tile.tileX * this.mapConfig.tileSize,
-              tile.tileY * this.mapConfig.tileSize,
-              this.mapConfig.tileSize,
-              this.mapConfig.tileSize,
-              xTileIndex * screenTileSize,
-              yTileIndex * screenTileSize,
-              screenTileSize,
-              screenTileSize
-            );
-          }
-        }
-      });
+    this.mapConfig.items.forEach((item) => {
+      debugger;
+      this.drawTile(
+        item.getView().getImage(),
+        item.x,
+        item.y,
+        0,
+        0,
+        256,
+        256,
+        screenTileSize / 2,
+        screenTileSize / 2
+      );
     });
   }
 
@@ -147,6 +126,62 @@ export class gameMap {
       });
     });
     return !overflowTiles.some((tile) => tile.isBarrier);
+  }
+
+  private drawTile(
+    image: HTMLImageElement,
+    x: number,
+    y: number,
+    tileX: number,
+    tileY: number,
+    tileXSize: number,
+    tileYSize: number,
+    screenXSize: number,
+    screenYSize: number
+  ): void {
+    if (this.mapCamera.isCameraShownArea(x, y)) {
+      if (this.dayPeriod === DayPeriods.Night) {
+        const components = this.characterComponents.filter((component) =>
+          component.isCharecterSeeArea(x, y)
+        );
+
+        components.forEach((component) => {
+          let xDifference = this.getInvisiblePartOfTile(x, component.x, component.radius);
+
+          let yDifference = this.getInvisiblePartOfTile(y, component.y, component.radius);
+
+          this.screen.renderImg(
+            image,
+
+            tileX - (Math.min(0, xDifference) / screenXSize) * tileXSize,
+
+            tileY - (Math.min(0, yDifference) / screenYSize) * tileYSize,
+
+            tileXSize - (Math.abs(xDifference) / screenXSize) * tileXSize,
+
+            tileYSize - (Math.abs(yDifference) / screenYSize) * tileYSize,
+            x - Math.min(0, xDifference),
+
+            y - Math.min(0, yDifference),
+
+            screenXSize - Math.abs(xDifference),
+            screenYSize - Math.abs(yDifference)
+          );
+        });
+      } else {
+        this.screen.renderImg(
+          image,
+          tileX,
+          tileY,
+          tileXSize,
+          tileYSize,
+          x,
+          y,
+          screenXSize,
+          screenYSize
+        );
+      }
+    }
   }
 
   private getInvisiblePartOfTile(

@@ -1,10 +1,12 @@
 import { Screen } from '../screen/screen';
-import { View } from './view';
+import { View, ItemView } from './view';
 import { IRegisterComponent } from '../models/register-component';
+import { Command } from './command';
 
 export abstract class Component {
   public x: number;
   public y: number;
+  protected issInfoShown: boolean = false;
 
   get width() {
     return this.view.width;
@@ -42,5 +44,41 @@ export abstract class Component {
 
   public trigger(): void {}
 
-  public changeContextMenuStatus(): void {}
+  public showInfo(): void {
+    this.issInfoShown = true;
+  }
+  public hideInfo(): void {
+    this.issInfoShown = false;
+  }
+
+  public getDescription(): string {
+    return;
+  }
+}
+
+export abstract class ItemComponent extends Component {
+  protected command: Command;
+
+  public setCommand(command: Command): void {
+    this.command = command;
+  }
+
+  public getView(): ItemView {
+    return this.view as ItemView;
+  }
+}
+
+export abstract class UIComponent extends Component {
+  public isFocused: boolean = false;
+  protected triggerCallback: Function;
+
+  public setOnTriggerAction(callback: Function) {
+    this.triggerCallback = callback;
+  }
+
+  public trigger(): void {
+    if (this.triggerCallback) {
+      this.triggerCallback();
+    }
+  }
 }
