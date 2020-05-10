@@ -5,11 +5,11 @@ import { BigTitle } from '../big-title';
 export class ForestTile extends BigTitle {
     public forest;
 
-    constructor(private color: 'green' | 'orange', width: number, height: number) {
+    constructor(width: number, height: number, private color: 'green' | 'orange' = 'green') {
         super(width, height, FOREST[color]);
     }
 
-    getForest(): Array<Array<tilePart>> {
+    getFigure(): Array<Array<tilePart>> {
         this.forest = this.getRandomFigure(this.width, this.height);
         return this.forest;
     }

@@ -11,87 +11,80 @@ export class MapGenerator {
     private mapConfig: tilePart[][] = [];
     private objectMapInformaition: Array<objectMapInformatin> = [];
 
+    private lalla = {
+        
+    }
+
     constructor(private width: number, private height: number) {
         this.mapConfig = this.createSpaceMap(this.width, this.height, ROAD_TILE_5);
+    }
+
+    addMapObject(type: mapObjectInformation, count: number, width?: number, height?: number): any { //todo
+        for (let index = 0; index < count; index++) {
+            switch (type) {
+                case mapObjectInformation.forest:
+                    const forest = new ForestTile(width, height).getFigure();
+                    this.addTexture(forest, type);
+                    break;
+                case mapObjectInformation.tree:
+                    this.addTexture(TINI_TREE, type);
+                    break;
+                case mapObjectInformation.river:
+                    const river = new RiverTile(width, height).getFigure();
+                    this.addTexture(river, type);
+                    break;
+            }
+        }
+
+        return this;
     }
 
     getMap(): map {
         return { land: this.mapConfig, tileSize: this.tileSize };
     }
 
-    includeInMap(): void {
+    includeInMap(): void { //todo
         this.objectMapInformaition.forEach((info) => {
             this.includeTiles(info.x0, info.y0, info.obstruction, this.mapConfig);
         });
     }
 
-    concatGeneratedObject() {
+    concatGeneratedObject() { //todo
         this.objectMapInformaition.forEach((inner) => {
             this.concatOverlayObject(inner);
         });
     }
 
-    amputateGeneratedObject() {
+    amputateGeneratedObject() { //todo
         this.objectMapInformaition.forEach((inner) => {
             this.amputateObject(inner);
         });
     }
 
-    amputateObject(inner: objectMapInformatin) {
-        const overlayelements = this.objectMapInformaition
-            .filter((o) => o.type !== 'tree')
+    amputateObject(inner: objectMapInformatin) { //todo
+        this.objectMapInformaition
             .filter((o) => o.type !== inner.type)
-            .filter((outsider) => this.isOverlay(inner, outsider));
+            .filter((outsider) => this.isOverlay(inner, outsider))
+            .forEach((el) => {
+                for (let i = 0; i < inner.obstruction.length; i++) {
+                    for (let j = 0; j < inner.obstruction[0].length; j++) {
+                        if (inner.obstruction[i][j]) {
+                            const absoluteX = j + inner.x0;
+                            const absoluteY = i + inner.y0;
 
-        overlayelements.forEach((el) => {
-            for (let i = 0; i < inner.obstruction.length; i++) {
-                for (let j = 0; j < inner.obstruction[0].length; j++) {
-                    if (inner.obstruction[i][j]) {
-                        const absoluteX = j + inner.x0;
-                        const absoluteY = i + inner.y0;
+                            const obj2j = absoluteX - el.x0;
+                            const obj2i = absoluteY - el.y0;
 
-                        const obj2j = absoluteX - el.x0;
-                        const obj2i = absoluteY - el.y0;
-
-                        if (obj2i >= 0 && obj2j >= 0 && el.obstruction[obj2i] && el.obstruction[obj2i][obj2j])
-                            inner.obstruction[i][j] = null;
+                            if (obj2i >= 0 && obj2j >= 0 && el.obstruction[obj2i] && el.obstruction[obj2i][obj2j]) {
+                                inner.obstruction[i][j] = null;
+                            }
+                        }
                     }
                 }
-            }
-        });
-
-        if (overlayelements.length > 0) {
-            this.concatOverlayObject(inner);
-        }
+            });
     }
 
-    addMapObject(name: mapObjectInformation, count: number): any {
-        let tile = null;
-
-        switch (name) {
-            case mapObjectInformation.forest:
-                const forestWidth = getRandomNumber(2, 4);
-                const forestHeight = getRandomNumber(2, 4);
-                const forest = new ForestTile('green', forestWidth, forestHeight);
-                tile = forest.getForest();
-                break;
-            case mapObjectInformation.tree:
-                tile = TINI_TREE;
-                break;
-            case mapObjectInformation.river:
-                const riverWidth = getRandomNumber(2, 4);
-                const rivertHeight = getRandomNumber(2, 4);
-                const river = new RiverTile(riverWidth, rivertHeight);
-                tile = river.getRiver();
-                break;
-        }
-
-        this.addTexture(count, tile, name);
-
-        return this;
-    }
-
-    createObjectOutline() {
+    createObjectOutline() { //todo
         this.objectMapInformaition.forEach((info) => {
             this.createOutline(info.obstruction, info.type);
         });
@@ -107,7 +100,9 @@ export class MapGenerator {
                     const obj2j = absoluteX - obj2.x0;
                     const obj2i = absoluteY - obj2.y0;
 
-                    if (obj2i >= 0 && obj2j >= 0 && obj2.obstruction[obj2i] && obj2.obstruction[obj2i][obj2j]) return true;
+                    if (obj2i >= 0 && obj2i < obj2.obstruction.length && obj2j >= 0 && obj2j < obj2.obstruction[obj2i].length) {
+                        return true;
+                    }
                 }
             }
         }
@@ -115,17 +110,13 @@ export class MapGenerator {
         return false;
     }
 
-    private concatOverlayObject(inner) {
+    private concatOverlayObject(inner) { //todo
         const overlayelements = this.objectMapInformaition
-            .filter((o) => o.type !== 'tree')
             .filter((o) => o.type === inner.type)
             .filter((o) => o.id !== inner.id)
             .filter((outsider) => this.isOverlay(inner, outsider));
 
         overlayelements.forEach((el) => {
-            const obj1 = this.objectMapInformaition.findIndex((obj) => obj.id === el.id);
-            const lll = this.objectMapInformaition.findIndex((inf) => inf.id === inner.id);
-
             const size = {
                 x0: el.x0 < inner.x0 ? el.x0 : inner.x0,
                 xl: el.xl > inner.xl ? el.xl : inner.xl,
@@ -133,37 +124,38 @@ export class MapGenerator {
                 yl: el.yl > inner.yl ? el.yl : inner.yl,
             };
 
-            let aaa = this.createSpaceMap(size.xl - size.x0 + 1, size.yl - size.y0 + 1, null);
+            const newElement = this.createSpaceMap(size.xl - size.x0 + 1, size.yl - size.y0 + 1, null);
 
-            this.includeTiles(el.x0 - size.x0, el.y0 - size.y0, el.obstruction, aaa);
-            this.includeTiles(inner.x0 - size.x0, inner.y0 - size.y0, inner.obstruction, aaa);
+            this.includeTiles(el.x0 - size.x0, el.y0 - size.y0, el.obstruction, newElement);
+            this.includeTiles(inner.x0 - size.x0, inner.y0 - size.y0, inner.obstruction, newElement);
 
-            this.objectMapInformaition[lll] = {
+            const innerIndex = this.objectMapInformaition.findIndex((inf) => inf.id === inner.id);
+            this.objectMapInformaition[innerIndex] = {
                 ...size,
                 type: el.type,
-                obstruction: aaa,
-                id: this.objectMapInformaition[lll].id,
+                obstruction: newElement,
+                id: this.objectMapInformaition[innerIndex].id,
             };
-            this.objectMapInformaition.splice(obj1, 1);
+
+            const includerElement = this.objectMapInformaition.findIndex((obj) => obj.id === el.id);
+            this.objectMapInformaition.splice(includerElement, 1);
         });
 
         if (overlayelements.length > 0) {
-            const lll = this.objectMapInformaition.findIndex((inf) => inf.id === inner.id);
+            const innerIndex = this.objectMapInformaition.findIndex((inf) => inf.id === inner.id);
 
-            this.concatOverlayObject(this.objectMapInformaition[lll]);
+            this.concatOverlayObject(this.objectMapInformaition[innerIndex]);
         }
     }
 
-    addTexture(count: number, obstruction: tilePart[][] | null[][], type: mapObjectInformation): void {
-        for (let i = 0; i < count; i++) {
-            const x0 = getRandomNumber(0, this.width - 1);
-            const y0 = getRandomNumber(0, this.height - 1);
-            const xl = x0 + obstruction[0].length - 1 > this.width - 1 ? this.width - 1 : x0 + obstruction[0].length - 1;
-            const yl = y0 + obstruction.length - 1 > this.height - 1 ? this.height - 1 : y0 + obstruction.length - 1;
-            const id = this.objectMapInformaition.length + x0 + y0;
+    addTexture(obstruction: tilePart[][] | null[][], type: mapObjectInformation): void {
+        const x0 = getRandomNumber(0, this.width - 1);
+        const y0 = getRandomNumber(0, this.height - 1);
+        const xl = x0 + obstruction[0].length - 1 > this.width - 1 ? this.width - 1 : x0 + obstruction[0].length - 1;
+        const yl = y0 + obstruction.length - 1 > this.height - 1 ? this.height - 1 : y0 + obstruction.length - 1;
+        const id = this.objectMapInformaition.length;
 
-            this.objectMapInformaition.push({ x0, y0, xl, yl, id, obstruction, type });
-        }
+        this.objectMapInformaition.push({ x0, y0, xl, yl, id, obstruction, type });
     }
 
     private includeTiles(x0: number, y0: number, obstruction: tilePart[][] | null[][], map: tilePart[][]) {
@@ -185,16 +177,16 @@ export class MapGenerator {
     private createSpaceMap(width: number, height: number, innerElement: tilePart | null): tilePart[][] {
         let newArray = [];
 
-        for (let i = 0; i < width - 1; i++) {
+        for (let i = 0; i < height - 1; i++) {
             newArray[i] = [];
-            for (let j = 0; j < height - 1; j++) {
+            for (let j = 0; j < width - 1; j++) {
                 newArray[i][j] = innerElement;
             }
         }
-        return newArray; //JSON.parse(JSON.stringify(new Array(width).fill(new Array(height).fill(innerElement))));
+        return newArray;
     }
 
-    getElementsPosition(array: Array<Array<tilePart | null>>, tilePact): Outline {
+    getElementsPosition(array: Array<Array<tilePart | null>>): Outline {
         const outline: Outline = new Outline();
 
         array.forEach((line, i) => {
@@ -221,24 +213,23 @@ export class MapGenerator {
         return outline;
     }
 
-    createOutline(mapTitles: Array<Array<tilePart>>, type: 'tree' | 'forest' | 'river') {
+    createOutline(mapTitles: Array<Array<tilePart>>, type: mapObjectInformation) { //todo
         let tilePact: any = {};
 
         switch (type) {
-            case 'tree':
+            case mapObjectInformation.tree:
                 return;
-                break;
-            case 'forest':
+            case mapObjectInformation.forest:
                 tilePact = FOREST.green;
                 break;
-            case 'river':
+            case mapObjectInformation.river:
                 tilePact = RIVER;
                 break;
             default:
                 return;
         }
 
-        const outlineInfo: Outline = this.getElementsPosition(mapTitles, tilePact); //todo
+        const outlineInfo: Outline = this.getElementsPosition(mapTitles);
 
         Object.keys(outlineInfo).forEach((key) => {
             outlineInfo[key].forEach((cell) => {

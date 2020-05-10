@@ -9,7 +9,7 @@ export class RiverTile extends BigTitle {
         super(width, height, RIVER);
     }
 
-    getRiver(): Array<Array<tilePart>> {
+    getFigure(): Array<Array<tilePart>> {
         this.river = this.getRandomFigure(this.width, this.height);
         return this.river;
     }

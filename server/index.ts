@@ -18,7 +18,7 @@ app.get('/source_map', (req, res) => {
 const gameCoordinator = io.on('connection', (socket) => {
     gameSocket = socket;
 
-    const mapGenerator = new MapGenerator(100, 100);
+    const mapGenerator = new MapGenerator(120, 80);
     mapGenerator
         .addMapObject(mapObjectInformation.tree, 20)
         .addMapObject(mapObjectInformation.forest, 10)
@@ -26,9 +26,7 @@ const gameCoordinator = io.on('connection', (socket) => {
 
     mapGenerator.concatGeneratedObject();
     mapGenerator.amputateGeneratedObject();
-
     mapGenerator.createObjectOutline();
-
     mapGenerator.includeInMap();
 
     gameSocket.emit('data', mapGenerator.getMap());

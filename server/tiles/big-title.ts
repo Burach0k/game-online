@@ -5,8 +5,10 @@ import { figures } from './random-figures';
 export class BigTitle {
     constructor(protected width: number, protected height: number, protected tilePack: any) {}
 
-    getRandomFigure(width: number, height: number): Array<Array<tilePart | null>> {
-        const key = Object.keys(figures)[getRandomNumber(0, Object.keys(figures).length - 1)];
+    protected getRandomFigure(width: number, height: number): Array<Array<tilePart | null>> {
+        const arrayFigures = Object.keys(figures);
+        const randomTemplate = getRandomNumber(0, arrayFigures.length - 1);
+        const key = arrayFigures[randomTemplate];
 
         let randomFigure = this.resize(figures[key], height, width);
 
@@ -15,7 +17,7 @@ export class BigTitle {
         return randomFigure;
     }
 
-    resize(template: Array<Array<0 | 1>>, CoefW: number, CoefH: number) {
+    private resize(template: Array<Array<0 | 1>>, CoefW: number, CoefH: number) {
         const initialLength = template[0].length;
         const newLength = Math.ceil(initialLength * CoefW);
         const step = Math.floor((newLength - 2) / (initialLength - 1));
@@ -51,7 +53,7 @@ export class BigTitle {
         }
     }
 
-    reverseArray(initialArray) {
+    private reverseArray(initialArray) {
         let reversedArray = new Array(initialArray[0].length).fill(new Array(initialArray.length).fill(null));
 
         reversedArray.forEach((elem, index) => {
