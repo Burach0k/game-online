@@ -1,1 +1,1 @@
-# game-online vlad pidor
+# game-online
